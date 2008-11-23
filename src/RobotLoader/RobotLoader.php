@@ -87,7 +87,7 @@ class RobotLoader extends AutoLoader
 				);
 			}
 
-			if (in_array(NETTE_DIR, $this->scanDirs, TRUE)) {
+			if (isset($this->list[strtolower(__CLASS__)]) && class_exists(/*Nette\Loaders\*/'NetteLoader', FALSE)) {
 				NetteLoader::getInstance()->unregister();
 			}
 		}
@@ -101,7 +101,7 @@ class RobotLoader extends AutoLoader
 
 		} else {
 			if ($this->autoRebuild === NULL) {
-				$this->autoRebuild = !/*Nette\*/Environment::isLive();
+				$this->autoRebuild = !/*Nette\*/Environment::isProduction();
 			}
 			if ($this->autoRebuild) {
 				if (!$this->rebuilded) {
