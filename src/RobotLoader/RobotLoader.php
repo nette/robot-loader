@@ -216,12 +216,12 @@ class RobotLoader extends AutoLoader
 		}
 
 		$iterator = Nette\Utils\Finder::findFiles(is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles))
-			->filter(function($file) use (&$disallow){
+			->filter(function($file) use (& $disallow) {
 				return !isset($disallow[$file->getPathname()]);
 			})
 			->from($dir)
 			->exclude($ignoreDirs)
-			->filter($filter = function($dir) use (&$disallow){
+			->filter($filter = function($dir) use (& $disallow) {
 				$path = $dir->getPathname();
 				if (is_file("$path/netterobots.txt")) {
 					foreach (file("$path/netterobots.txt") as $s) {
@@ -289,44 +289,44 @@ class RobotLoader extends AutoLoader
 		foreach (@token_get_all($code) as $token) { // intentionally @
 			if (is_array($token)) {
 				switch ($token[0]) {
-				case T_COMMENT:
-				case T_DOC_COMMENT:
-				case T_WHITESPACE:
-					continue 2;
+					case T_COMMENT:
+					case T_DOC_COMMENT:
+					case T_WHITESPACE:
+						continue 2;
 
-				case T_NS_SEPARATOR:
-				case T_STRING:
-					if ($expected) {
-						$name .= $token[1];
-					}
-					continue 2;
+					case T_NS_SEPARATOR:
+					case T_STRING:
+						if ($expected) {
+							$name .= $token[1];
+						}
+						continue 2;
 
-				case T_NAMESPACE:
-				case T_CLASS:
-				case T_INTERFACE:
-				case $T_TRAIT:
-					$expected = $token[0];
-					$name = '';
-					continue 2;
-				case T_CURLY_OPEN:
-				case T_DOLLAR_OPEN_CURLY_BRACES:
-					$level++;
+					case T_NAMESPACE:
+					case T_CLASS:
+					case T_INTERFACE:
+					case $T_TRAIT:
+						$expected = $token[0];
+						$name = '';
+						continue 2;
+					case T_CURLY_OPEN:
+					case T_DOLLAR_OPEN_CURLY_BRACES:
+						$level++;
 				}
 			}
 
 			if ($expected) {
 				switch ($expected) {
-				case T_CLASS:
-				case T_INTERFACE:
-				case $T_TRAIT:
-					if ($level === $minLevel) {
-						$classes[] = $namespace . $name;
-					}
-					break;
+					case T_CLASS:
+					case T_INTERFACE:
+					case $T_TRAIT:
+						if ($level === $minLevel) {
+							$classes[] = $namespace . $name;
+						}
+						break;
 
-				case T_NAMESPACE:
-					$namespace = $name ? $name . '\\' : '';
-					$minLevel = $token === '{' ? 1 : 0;
+					case T_NAMESPACE:
+						$namespace = $name ? $name . '\\' : '';
+						$minLevel = $token === '{' ? 1 : 0;
 				}
 
 				$expected = NULL;
