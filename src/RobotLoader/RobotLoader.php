@@ -106,7 +106,6 @@ class RobotLoader extends AutoLoader
 
 		if (isset($this->classes[$type]['file'])) {
 			call_user_func(function($file) { require $file; }, $this->classes[$type]['file']);
-			self::$count++;
 		} else {
 			$this->missing[$type] = TRUE;
 		}
