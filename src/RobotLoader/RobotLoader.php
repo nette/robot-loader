@@ -38,7 +38,7 @@ class RobotLoader extends AutoLoader
 	public $autoRebuild = TRUE;
 
 	/** @var array */
-	public $scanDirs = array();
+	private $scanDirs = array();
 
 	/** @var array of lowered-class => [file, time, orig] or num-of-retry */
 	private $classes = array();
