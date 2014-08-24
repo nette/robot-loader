@@ -8,7 +8,8 @@
 namespace Nette\Loaders;
 
 use Nette,
-	Nette\Caching\Cache;
+	Nette\Caching\Cache,
+	SplFileInfo;
 
 
 /**
@@ -63,7 +64,7 @@ class RobotLoader extends Nette\Object
 	 */
 	public function register($prepend = FALSE)
 	{
-		$this->classes = $this->getCache()->load($this->getKey(), array($this, '_rebuildCallback'));
+		$this->classes = $this->getCache()->load($this->getKey(), array($this, 'rebuildCallback'));
 		spl_autoload_register(array($this, 'tryLoad'), TRUE, (bool) $prepend);
 		return $this;
 	}
@@ -149,14 +150,14 @@ class RobotLoader extends Nette\Object
 	public function rebuild()
 	{
 		$this->rebuilt = TRUE; // prevents calling rebuild() or updateFile() in tryLoad()
-		$this->getCache()->save($this->getKey(), Nette\Utils\Callback::closure($this, '_rebuildCallback'));
+		$this->getCache()->save($this->getKey(), Nette\Utils\Callback::closure($this, 'rebuildCallback'));
 	}
 
 
 	/**
 	 * @internal
 	 */
-	public function _rebuildCallback()
+	public function rebuildCallback()
 	{
 		$files = $missing = array();
 		foreach ($this->classes as $class => $info) {
@@ -211,12 +212,12 @@ class RobotLoader extends Nette\Object
 		}
 
 		$iterator = Nette\Utils\Finder::findFiles(is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles))
-			->filter(function($file) use (& $disallow) {
+			->filter(function(SplFileInfo $file) use (& $disallow) {
 				return !isset($disallow[$file->getPathname()]);
 			})
 			->from($dir)
 			->exclude($ignoreDirs)
-			->filter($filter = function($dir) use (& $disallow) {
+			->filter($filter = function(SplFileInfo $dir) use (& $disallow) {
 				$path = $dir->getPathname();
 				if (is_file("$path/netterobots.txt")) {
 					foreach (file("$path/netterobots.txt") as $s) {
@@ -228,7 +229,7 @@ class RobotLoader extends Nette\Object
 				return !isset($disallow[$path]);
 			});
 
-		$filter(new \SplFileInfo($dir));
+		$filter(new SplFileInfo($dir));
 		return $iterator;
 	}
 
