@@ -16,7 +16,7 @@
 	"require": {
 		"php": ">=5.3.1",
 		"nette/caching": "~2.2",
-		"nette/finder": "~2.2",
+		"nette/finder": "~2.3",
 		"nette/utils": "~2.2"
 	},
 	"require-dev": {
