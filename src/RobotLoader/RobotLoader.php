@@ -34,7 +34,7 @@ class RobotLoader extends Nette\Object
 	public $autoRebuild = TRUE;
 
 	/** @var array */
-	private $scanDirs = array();
+	private $scanPaths = array();
 
 	/** @var array of lowered-class => [file, time, orig] or num-of-retry */
 	private $classes = array();
@@ -110,13 +110,13 @@ class RobotLoader extends Nette\Object
 
 
 	/**
-	 * Add directory (or directories) to list.
-	 * @param  string|array  absolute path
+	 * Add path or paths to list.
+	 * @param  string|string[]  absolute path
 	 * @return self
 	 */
 	public function addDirectory($path)
 	{
-		$this->scanDirs = array_merge($this->scanDirs, (array) $path);
+		$this->scanPaths = array_merge($this->scanPaths, (array) $path);
 		return $this;
 	}
 
@@ -163,7 +163,7 @@ class RobotLoader extends Nette\Object
 		}
 
 		$this->classes = array();
-		foreach ($this->scanDirs as $path) {
+		foreach ($this->scanPaths as $path) {
 			foreach (is_file($path) ? array(new SplFileInfo($path)) : $this->createFileIterator($path) as $file) {
 				$file = $file->getPathname();
 				if (isset($files[$file]) && $files[$file]['time'] == filemtime($file)) {
@@ -373,7 +373,7 @@ class RobotLoader extends Nette\Object
 	 */
 	protected function getKey()
 	{
-		return array($this->ignoreDirs, $this->acceptFiles, $this->scanDirs);
+		return array($this->ignoreDirs, $this->acceptFiles, $this->scanPaths);
 	}
 
 }
