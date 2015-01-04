@@ -16,7 +16,7 @@ $loader = new RobotLoader;
 $loader->setCacheStorage(new DevNullStorage);
 $loader->addDirectory(TEMP_DIR);
 
-$dir = realpath(TEMP_DIR) . DIRECTORY_SEPARATOR;
+$dir = TEMP_DIR . DIRECTORY_SEPARATOR;
 file_put_contents($dir . 'file1.php', '<?php class A {}');
 file_put_contents($dir . 'file2.php', '<?php class B {}');
 
