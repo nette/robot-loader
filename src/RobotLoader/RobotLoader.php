@@ -77,7 +77,8 @@ class RobotLoader extends Nette\Object
 	 */
 	public function tryLoad($type)
 	{
-		$type = ltrim(strtolower($type), '\\'); // PHP namespace bug #49143
+		$type = $orig = ltrim($type, '\\'); // PHP namespace bug #49143
+		$type = strtolower($type);
 
 		$info = & $this->classes[$type];
 		if (isset($this->missing[$type]) || (is_int($info) && $info >= self::RETRY_LIMIT)) {
@@ -102,6 +103,9 @@ class RobotLoader extends Nette\Object
 		}
 
 		if (isset($this->classes[$type]['file'])) {
+			if ($this->classes[$type]['orig'] !== $orig) {
+				trigger_error("Case mismatch on class name '$orig', correct name is '{$this->classes[$type]['orig']}'.", E_USER_WARNING);
+			}
 			call_user_func(function($file) { require $file; }, $this->classes[$type]['file']);
 		} else {
 			$this->missing[$type] = TRUE;
