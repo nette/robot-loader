@@ -34,16 +34,16 @@ class RobotLoader extends Nette\Object
 	public $autoRebuild = TRUE;
 
 	/** @var array */
-	private $scanPaths = array();
+	private $scanPaths = [];
 
 	/** @var array of lowered-class => [file, time, orig] or num-of-retry */
-	private $classes = array();
+	private $classes = [];
 
 	/** @var bool */
 	private $rebuilt = FALSE;
 
 	/** @var array of missing classes in this request */
-	private $missing = array();
+	private $missing = [];
 
 	/** @var Nette\Caching\IStorage */
 	private $cacheStorage;
@@ -64,8 +64,8 @@ class RobotLoader extends Nette\Object
 	 */
 	public function register($prepend = FALSE)
 	{
-		$this->classes = $this->getCache()->load($this->getKey(), array($this, 'rebuildCallback'));
-		spl_autoload_register(array($this, 'tryLoad'), TRUE, (bool) $prepend);
+		$this->classes = $this->getCache()->load($this->getKey(), [$this, 'rebuildCallback']);
+		spl_autoload_register([$this, 'tryLoad'], TRUE, (bool) $prepend);
 		return $this;
 	}
 
@@ -130,7 +130,7 @@ class RobotLoader extends Nette\Object
 	 */
 	public function getIndexedClasses()
 	{
-		$res = array();
+		$res = [];
 		foreach ($this->classes as $info) {
 			if (is_array($info)) {
 				$res[$info['orig']] = $info['file'];
@@ -156,7 +156,7 @@ class RobotLoader extends Nette\Object
 	 */
 	public function rebuildCallback()
 	{
-		$files = $missing = array();
+		$files = $missing = [];
 		foreach ($this->classes as $class => $info) {
 			if (is_array($info)) {
 				$files[$info['file']]['time'] = $info['time'];
@@ -166,23 +166,23 @@ class RobotLoader extends Nette\Object
 			}
 		}
 
-		$this->classes = array();
+		$this->classes = [];
 		foreach ($this->scanPaths as $path) {
-			foreach (is_file($path) ? array(new SplFileInfo($path)) : $this->createFileIterator($path) as $file) {
+			foreach (is_file($path) ? [new SplFileInfo($path)] : $this->createFileIterator($path) as $file) {
 				$file = $file->getPathname();
 				if (isset($files[$file]) && $files[$file]['time'] == filemtime($file)) {
 					$classes = $files[$file]['classes'];
 				} else {
 					$classes = $this->scanPhp(file_get_contents($file));
 				}
-				$files[$file] = array('classes' => array(), 'time' => filemtime($file));
+				$files[$file] = ['classes' => [], 'time' => filemtime($file)];
 
 				foreach ($classes as $class) {
 					$info = & $this->classes[strtolower($class)];
 					if (isset($info['file'])) {
 						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
 					}
-					$info = array('file' => $file, 'time' => filemtime($file), 'orig' => $class);
+					$info = ['file' => $file, 'time' => filemtime($file), 'orig' => $class];
 				}
 			}
 		}
@@ -203,7 +203,7 @@ class RobotLoader extends Nette\Object
 		}
 
 		$ignoreDirs = is_array($this->ignoreDirs) ? $this->ignoreDirs : preg_split('#[,\s]+#', $this->ignoreDirs);
-		$disallow = array();
+		$disallow = [];
 		foreach ($ignoreDirs as $item) {
 			if ($item = realpath($item)) {
 				$disallow[$item] = TRUE;
@@ -254,7 +254,7 @@ class RobotLoader extends Nette\Object
 				if (isset($info['file'])) {
 					throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
 				}
-				$info = array('file' => $file, 'time' => filemtime($file), 'orig' => $class);
+				$info = ['file' => $file, 'time' => filemtime($file), 'orig' => $class];
 			}
 		}
 	}
@@ -272,7 +272,7 @@ class RobotLoader extends Nette\Object
 		$expected = FALSE;
 		$namespace = '';
 		$level = $minLevel = 0;
-		$classes = array();
+		$classes = [];
 
 		if (preg_match('#//nette'.'loader=(\S*)#', $code, $matches)) {
 			foreach (explode(',', $matches[1]) as $name) {
@@ -377,7 +377,7 @@ class RobotLoader extends Nette\Object
 	 */
 	protected function getKey()
 	{
-		return array($this->ignoreDirs, $this->acceptFiles, $this->scanPaths);
+		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths];
 	}
 
 }

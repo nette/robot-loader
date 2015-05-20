@@ -22,20 +22,20 @@ file_put_contents($dir . 'file2.php', '<?php class B {}');
 
 $loader->register();
 
-Assert::equal(array(
+Assert::equal([
 	'A' => $dir . 'file1.php',
 	'B' => $dir . 'file2.php',
-), $loader->getIndexedClasses());
+], $loader->getIndexedClasses());
 
 
 rename($dir . 'file1.php', $dir . 'file3.php');
 
 $loader->rebuild();
 
-Assert::equal(array(
+Assert::equal([
 	'A' => $dir . 'file3.php',
 	'B' => $dir . 'file2.php',
-), $loader->getIndexedClasses());
+], $loader->getIndexedClasses());
 
 
 sleep(2); // filemtime resolution is in seconds
@@ -44,7 +44,7 @@ file_put_contents($dir . 'file2.php', '<?php ');
 
 $loader->rebuild();
 
-Assert::equal(array(
+Assert::equal([
 	'A' => $dir . 'file3.php',
 	'B' => $dir . 'file1.php',
-), $loader->getIndexedClasses());
+], $loader->getIndexedClasses());
