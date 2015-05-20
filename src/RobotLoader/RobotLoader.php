@@ -267,8 +267,6 @@ class RobotLoader extends Nette\Object
 	 */
 	private function scanPhp($code)
 	{
-		$T_TRAIT = PHP_VERSION_ID < 50400 ? -1 : T_TRAIT;
-
 		$expected = FALSE;
 		$namespace = '';
 		$level = $minLevel = 0;
@@ -299,7 +297,7 @@ class RobotLoader extends Nette\Object
 					case T_NAMESPACE:
 					case T_CLASS:
 					case T_INTERFACE:
-					case $T_TRAIT:
+					case T_TRAIT:
 						$expected = $token[0];
 						$name = '';
 						continue 2;
@@ -313,7 +311,7 @@ class RobotLoader extends Nette\Object
 				switch ($expected) {
 					case T_CLASS:
 					case T_INTERFACE:
-					case $T_TRAIT:
+					case T_TRAIT:
 						if ($name && $level === $minLevel) {
 							$classes[] = $namespace . $name;
 						}
