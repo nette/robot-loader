@@ -339,7 +339,7 @@ class RobotLoader extends Nette\Object
 
 
 	/**
-	 * @return RobotLoader
+	 * @return self
 	 */
 	public function setCacheStorage(Nette\Caching\IStorage $storage)
 	{
