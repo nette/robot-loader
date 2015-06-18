@@ -7,8 +7,8 @@
 
 namespace Nette\Loaders;
 
-use Nette,
-	Nette\Caching\Cache;
+use Nette;
+use Nette\Caching\Cache;
 
 
 /**
@@ -51,7 +51,7 @@ class RobotLoader extends Nette\Object
 	public function __construct()
 	{
 		if (!extension_loaded('tokenizer')) {
-			throw new Nette\NotSupportedException("PHP extension Tokenizer is not loaded.");
+			throw new Nette\NotSupportedException('PHP extension Tokenizer is not loaded.');
 		}
 	}
 
@@ -101,7 +101,7 @@ class RobotLoader extends Nette\Object
 		}
 
 		if (isset($this->classes[$type]['file'])) {
-			call_user_func(function($file) { require $file; }, $this->classes[$type]['file']);
+			call_user_func(function ($file) { require $file; }, $this->classes[$type]['file']);
 		} else {
 			$this->missing[$type] = TRUE;
 		}
@@ -211,12 +211,12 @@ class RobotLoader extends Nette\Object
 		}
 
 		$iterator = Nette\Utils\Finder::findFiles(is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles))
-			->filter(function($file) use (& $disallow) {
+			->filter(function ($file) use (& $disallow) {
 				return !isset($disallow[$file->getPathname()]);
 			})
 			->from($dir)
 			->exclude($ignoreDirs)
-			->filter($filter = function($dir) use (& $disallow) {
+			->filter($filter = function ($dir) use (& $disallow) {
 				$path = $dir->getPathname();
 				if (is_file("$path/netterobots.txt")) {
 					foreach (file("$path/netterobots.txt") as $s) {
