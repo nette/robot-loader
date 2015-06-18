@@ -6,9 +6,9 @@
  * @phpIni phar.readonly=0
  */
 
-use Nette\Loaders\RobotLoader,
-	Nette\Caching\Storages\DevNullStorage,
-	Tester\Assert;
+use Nette\Loaders\RobotLoader;
+use Nette\Caching\Storages\DevNullStorage;
+use Tester\Assert;
 
 
 require __DIR__ . '/../bootstrap.php';
@@ -24,7 +24,7 @@ $phar['sub/class.D.php'] = '<?php class D {}';
 $phar->setStub('<?php __HALT_COMPILER();');
 unset($phar);
 
-Assert::true( is_file($pharFile) );
+Assert::true(is_file($pharFile));
 Phar::loadPhar($pharFile, 'test.phar');
 
 
@@ -32,19 +32,19 @@ $loader = new RobotLoader;
 $loader->setCacheStorage(new DevNullStorage);
 $loader->addDirectory("phar://$pharFile/sub");
 $loader->addDirectory("PHAR://$pharFile/class.B.php");
-$loader->addDirectory("phar://test.phar/class.C.php");
+$loader->addDirectory('phar://test.phar/class.C.php');
 $loader->register();
 
-Assert::false( class_exists('A') );
-Assert::true( class_exists('B') );
-Assert::true( class_exists('C') );
-Assert::true( class_exists('D') );
+Assert::false(class_exists('A'));
+Assert::true(class_exists('B'));
+Assert::true(class_exists('C'));
+Assert::true(class_exists('D'));
 
 
 $loader = new RobotLoader;
 $loader->setCacheStorage(new DevNullStorage);
 $loader->addDirectory("phar://$pharFile/non-dir");
-Assert::exception(function() use ($loader, $pharFile) {
+Assert::exception(function () use ($loader, $pharFile) {
 	$loader->register();
 }, 'Nette\IOException', "File or directory 'phar://$pharFile/non-dir' not found.");
 
@@ -52,6 +52,6 @@ Assert::exception(function() use ($loader, $pharFile) {
 $loader = new RobotLoader;
 $loader->setCacheStorage(new DevNullStorage);
 $loader->addDirectory("phar://$pharFile/non-file.php");
-Assert::exception(function() use ($loader, $pharFile) {
+Assert::exception(function () use ($loader, $pharFile) {
 	$loader->register();
 }, 'Nette\IOException', "File or directory 'phar://$pharFile/non-file.php' not found.");
