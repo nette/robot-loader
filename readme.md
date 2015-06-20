@@ -3,6 +3,8 @@ RobotLoader: comfortable autoloading
 
 [![Downloads this Month](https://img.shields.io/packagist/dm/nette/robot-loader.svg)](https://packagist.org/packages/nette/robot-loader)
 [![Build Status](https://travis-ci.org/nette/robot-loader.svg?branch=master)](https://travis-ci.org/nette/robot-loader)
+[![Latest Stable Version](https://poser.pugx.org/nette/robot-loader/v/stable)](https://github.com/nette/robot-loader/releases)
+[![License](https://img.shields.io/badge/license-New%20BSD-blue.svg)](https://github.com/nette/robot-loader/blob/master/license.md)
 
 RobotLoader is a tool that gives you comfort of automated class loading for your entire application including third-party libraries.
 
