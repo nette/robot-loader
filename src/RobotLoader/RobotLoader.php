@@ -245,7 +245,7 @@ class RobotLoader extends Nette\Object
 		if (is_file($file)) {
 			foreach ($this->scanPhp(file_get_contents($file)) as $class) {
 				$info = & $this->classes[strtolower($class)];
-				if (isset($info['file']) && @filemtime($info['file']) !== $info['time']) { // intentionally ==, file may not exists
+				if (isset($info['file']) && @filemtime($info['file']) !== $info['time']) { // @ file may not exists
 					$this->updateFile($info['file']);
 					$info = & $this->classes[strtolower($class)];
 				}
@@ -277,7 +277,7 @@ class RobotLoader extends Nette\Object
 			return $classes;
 		}
 
-		foreach (@token_get_all($code) as $token) { // intentionally @
+		foreach (@token_get_all($code) as $token) { // @ can be corrupted or can use newer syntax
 			if (is_array($token)) {
 				switch ($token[0]) {
 					case T_COMMENT:
