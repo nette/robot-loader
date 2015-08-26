@@ -46,7 +46,7 @@ $loader->setCacheStorage(new DevNullStorage);
 $loader->addDirectory("phar://$pharFile/non-dir");
 Assert::exception(function () use ($loader, $pharFile) {
 	$loader->register();
-}, 'Nette\IOException', "File or directory 'phar://$pharFile/non-dir' not found.");
+}, Nette\IOException::class, "File or directory 'phar://$pharFile/non-dir' not found.");
 
 
 $loader = new RobotLoader;
@@ -54,4 +54,4 @@ $loader->setCacheStorage(new DevNullStorage);
 $loader->addDirectory("phar://$pharFile/non-file.php");
 Assert::exception(function () use ($loader, $pharFile) {
 	$loader->register();
-}, 'Nette\IOException', "File or directory 'phar://$pharFile/non-file.php' not found.");
+}, Nette\IOException::class, "File or directory 'phar://$pharFile/non-file.php' not found.");
