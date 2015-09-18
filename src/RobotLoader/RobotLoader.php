@@ -14,9 +14,6 @@ use SplFileInfo;
 
 /**
  * Nette auto loader is responsible for loading classes and interfaces.
- *
- * @property-read array $indexedClasses
- * @property   Nette\Caching\IStorage $cacheStorage
  */
 class RobotLoader extends Nette\Object
 {
