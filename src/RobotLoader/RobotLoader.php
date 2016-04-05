@@ -15,8 +15,10 @@ use SplFileInfo;
 /**
  * Nette auto loader is responsible for loading classes and interfaces.
  */
-class RobotLoader extends Nette\Object
+class RobotLoader
 {
+	use Nette\SmartObject;
+
 	const RETRY_LIMIT = 3;
 
 	/** @var string|array  comma separated wildcards */
