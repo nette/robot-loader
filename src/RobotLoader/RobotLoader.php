@@ -8,7 +8,6 @@
 namespace Nette\Loaders;
 
 use Nette;
-use Nette\Caching\Cache;
 use SplFileInfo;
 
 
@@ -42,8 +41,8 @@ class RobotLoader
 	/** @var array of missing classes in this request */
 	private $missing = [];
 
-	/** @var Nette\Caching\IStorage */
-	private $cacheStorage;
+	/** @var string|NULL */
+	private $tempDirectory;
 
 
 	public function __construct()
@@ -61,7 +60,7 @@ class RobotLoader
 	 */
 	public function register($prepend = FALSE)
 	{
-		$this->classes = $this->getCache()->load($this->getKey(), [$this, 'rebuildCallback']);
+		$this->loadCache();
 		spl_autoload_register([$this, 'tryLoad'], TRUE, (bool) $prepend);
 		return $this;
 	}
@@ -86,7 +85,7 @@ class RobotLoader
 			if (!is_array($info) || !is_file($info['file'])) {
 				$info = is_int($info) ? $info + 1 : 0;
 				if ($this->refreshed) {
-					$this->getCache()->save($this->getKey(), $this->classes);
+					$this->saveCache();
 				} else {
 					$this->rebuild();
 				}
@@ -95,7 +94,7 @@ class RobotLoader
 				if (!isset($this->classes[$type])) {
 					$this->classes[$type] = 0;
 				}
-				$this->getCache()->save($this->getKey(), $this->classes);
+				$this->saveCache();
 			}
 		}
 
@@ -143,14 +142,16 @@ class RobotLoader
 	 */
 	public function rebuild()
 	{
-		$this->getCache()->save($this->getKey(), Nette\Utils\Callback::closure($this, 'rebuildCallback'));
+		$this->refresh();
+		$this->saveCache();
 	}
 
 
 	/**
-	 * @internal
+	 * Refreshes class list.
+	 * @return void
 	 */
-	public function rebuildCallback()
+	private function refresh()
 	{
 		$this->refreshed = TRUE; // prevents calling rebuild() or updateFile() in tryLoad()
 		$files = $missing = [];
@@ -184,7 +185,6 @@ class RobotLoader
 			}
 		}
 		$this->classes += $missing;
-		return $this->classes;
 	}
 
 
@@ -347,43 +347,113 @@ class RobotLoader
 
 
 	/**
+	 * Sets path to temporary directory.
 	 * @return self
 	 */
-	public function setCacheStorage(Nette\Caching\IStorage $storage)
+	public function setTempDirectory($path)
 	{
-		$this->cacheStorage = $storage;
+		$this->tempDirectory = $path;
 		return $this;
 	}
 
 
 	/**
-	 * @return Nette\Caching\IStorage
+	 * Loads class list from cache.
+	 * @return void
 	 */
-	public function getCacheStorage()
+	private function loadCache()
 	{
-		return $this->cacheStorage;
+		if (!$this->tempDirectory) {
+			throw new \LogicException('Set path to temporary directory using setTempDirectory().');
+		}
+
+		$file = $this->getCacheFile();
+		$this->classes = @include $file; // @ file may not exist
+		if (is_array($this->classes)) {
+			return;
+		}
+
+		if (!is_dir($this->tempDirectory)) {
+			@mkdir($this->tempDirectory); // @ - directory may already exist
+		}
+
+		$handle = fopen("$file.lock", 'c+');
+		if (!$handle || !flock($handle, LOCK_EX)) {
+			throw new \RuntimeException("Unable to create or acquire exclusive lock on file '$file.lock'.");
+		}
+
+		$this->classes = @include $file; // @ file may not exist
+		if (!is_array($this->classes)) {
+			$this->classes = [];
+			$this->rebuild();
+		}
+
+		flock($handle, LOCK_UN);
+		fclose($handle);
+		@unlink("$file.lock"); // @ file may become locked on Windows
 	}
 
 
 	/**
-	 * @return Nette\Caching\Cache
+	 * Writes class list to cache.
+	 * @return void
 	 */
-	protected function getCache()
+	private function saveCache()
 	{
-		if (!$this->cacheStorage) {
-			trigger_error('Missing cache storage.', E_USER_WARNING);
-			$this->cacheStorage = new Nette\Caching\Storages\DevNullStorage;
+		if (!$this->tempDirectory) {
+			return;
 		}
-		return new Cache($this->cacheStorage, 'Nette.RobotLoader');
+
+		$file = $this->getCacheFile();
+		$code = "<?php\nreturn " . var_export($this->classes, TRUE) . ";\n";
+		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
+			@unlink("$file.tmp"); // @ - file may not exist
+			throw new \RuntimeException("Unable to create '$file'.");
+		}
+		if (function_exists('opcache_invalidate')) {
+			@opcache_invalidate($file, TRUE); // @ can be restricted
+		}
+	}
+
+
+	/**
+	 * @return string
+	 */
+	private function getCacheFile()
+	{
+		return $this->tempDirectory . '/' . md5(serialize($this->getCacheKey())) . '.php';
 	}
 
 
 	/**
 	 * @return array
 	 */
-	protected function getKey()
+	protected function getCacheKey()
 	{
 		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths];
+	}
+
+
+	/** @deprecated */
+	public function setCacheStorage(Nette\Caching\IStorage $storage)
+	{
+		if ($storage instanceof Nette\Caching\Storages\FileStorage) { // back compatibility
+			$prop = (new \ReflectionClass($storage))->getProperty('dir');
+			$prop->setAccessible(TRUE);
+			$this->tempDirectory = $prop->getValue($storage) . '/Nette.RobotLoader';
+		} elseif ($storage instanceof Nette\Caching\Storages\DevNullStorage) {
+			$this->tempDirectory = NULL;
+		} else {
+			trigger_error(__METHOD__ . '() is deprecated; use setTempDirectory() to enable caching again.', E_USER_WARNING);
+		}
+		return $this;
+	}
+
+
+	/** @deprecated */
+	public function getCacheStorage()
+	{
+		trigger_error(__METHOD__ . '() is deprecated.', E_USER_DEPRECATED);
 	}
 
 }

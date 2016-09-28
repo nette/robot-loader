@@ -5,7 +5,6 @@
  */
 
 use Nette\Loaders\RobotLoader;
-use Nette\Caching\Storages\DevNullStorage;
 use Tester\Assert;
 
 
@@ -13,7 +12,7 @@ require __DIR__ . '/../bootstrap.php';
 
 
 $loader = new RobotLoader;
-$loader->setCacheStorage(new DevNullStorage);
+$loader->setTempDirectory(TEMP_DIR);
 $loader->addDirectory(TEMP_DIR);
 
 $dir = TEMP_DIR . DIRECTORY_SEPARATOR;

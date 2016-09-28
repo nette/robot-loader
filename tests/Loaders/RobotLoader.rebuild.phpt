@@ -5,7 +5,6 @@
  */
 
 use Nette\Loaders\RobotLoader;
-use Nette\Caching\Storages\FileStorage;
 use Tester\Assert;
 
 
@@ -16,7 +15,7 @@ file_put_contents(TEMP_DIR . '/file1.php', '<?php class A {}');
 file_put_contents(TEMP_DIR . '/file2.php', '<?php class B {}');
 
 $loader = new RobotLoader;
-$loader->setCacheStorage(new FileStorage(TEMP_DIR));
+$loader->setTempDirectory(TEMP_DIR);
 $loader->addDirectory(TEMP_DIR);
 $loader->register(); // rebuilds cache
 
@@ -26,7 +25,7 @@ Assert::false(class_exists('A'));
 
 
 $loader2 = new RobotLoader;
-$loader2->setCacheStorage(new FileStorage(TEMP_DIR));
+$loader2->setTempDirectory(TEMP_DIR);
 $loader2->addDirectory(TEMP_DIR);
 $loader2->register();
 
