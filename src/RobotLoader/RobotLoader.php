@@ -27,7 +27,7 @@ class RobotLoader
 	/** @var string|array  comma separated wildcards */
 	public $acceptFiles = '*.php, *.php5';
 
-	/** @var bool */
+	/** @var bool @deprecated */
 	public $autoRebuild = TRUE;
 
 	/** @var array */
@@ -333,6 +333,17 @@ class RobotLoader
 
 
 	/********************* caching ****************d*g**/
+
+
+	/**
+	 * Sets auto-refresh mode.
+	 * @return self
+	 */
+	public function setAutoRefresh($on = TRUE)
+	{
+		$this->autoRebuild = (bool) $on;
+		return $this;
+	}
 
 
 	/**
