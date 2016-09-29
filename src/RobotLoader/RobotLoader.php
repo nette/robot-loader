@@ -143,7 +143,6 @@ class RobotLoader
 	 */
 	public function rebuild()
 	{
-		$this->refreshed = TRUE; // prevents calling rebuild() or updateFile() in tryLoad()
 		$this->getCache()->save($this->getKey(), Nette\Utils\Callback::closure($this, 'rebuildCallback'));
 	}
 
@@ -153,6 +152,7 @@ class RobotLoader
 	 */
 	public function rebuildCallback()
 	{
+		$this->refreshed = TRUE; // prevents calling rebuild() or updateFile() in tryLoad()
 		$files = $missing = [];
 		foreach ($this->classes as $class => $info) {
 			if (is_array($info)) {
