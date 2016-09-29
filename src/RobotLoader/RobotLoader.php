@@ -37,7 +37,7 @@ class RobotLoader
 	private $classes = [];
 
 	/** @var bool */
-	private $rebuilt = FALSE;
+	private $refreshed = FALSE;
 
 	/** @var array of missing classes in this request */
 	private $missing = [];
@@ -85,12 +85,12 @@ class RobotLoader
 		if ($this->autoRebuild) {
 			if (!is_array($info) || !is_file($info['file'])) {
 				$info = is_int($info) ? $info + 1 : 0;
-				if ($this->rebuilt) {
+				if ($this->refreshed) {
 					$this->getCache()->save($this->getKey(), $this->classes);
 				} else {
 					$this->rebuild();
 				}
-			} elseif (!$this->rebuilt && filemtime($info['file']) !== $info['time']) {
+			} elseif (!$this->refreshed && filemtime($info['file']) !== $info['time']) {
 				$this->updateFile($info['file']);
 				if (!isset($this->classes[$type])) {
 					$this->classes[$type] = 0;
@@ -143,7 +143,7 @@ class RobotLoader
 	 */
 	public function rebuild()
 	{
-		$this->rebuilt = TRUE; // prevents calling rebuild() or updateFile() in tryLoad()
+		$this->refreshed = TRUE; // prevents calling rebuild() or updateFile() in tryLoad()
 		$this->getCache()->save($this->getKey(), Nette\Utils\Callback::closure($this, 'rebuildCallback'));
 	}
 
@@ -332,7 +332,7 @@ class RobotLoader
 	}
 
 
-	/********************* backend ****************d*g**/
+	/********************* caching ****************d*g**/
 
 
 	/**
@@ -368,7 +368,7 @@ class RobotLoader
 
 
 	/**
-	 * @return string
+	 * @return array
 	 */
 	protected function getKey()
 	{
