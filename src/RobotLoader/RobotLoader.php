@@ -57,7 +57,7 @@ class RobotLoader
 	/**
 	 * Register autoloader.
 	 * @param  bool  prepend autoloader?
-	 * @return self
+	 * @return static
 	 */
 	public function register($prepend = FALSE)
 	{
@@ -113,7 +113,7 @@ class RobotLoader
 	/**
 	 * Add path or paths to list.
 	 * @param  string|string[]  absolute path
-	 * @return self
+	 * @return static
 	 */
 	public function addDirectory($path)
 	{
@@ -337,7 +337,7 @@ class RobotLoader
 
 	/**
 	 * Sets auto-refresh mode.
-	 * @return self
+	 * @return static
 	 */
 	public function setAutoRefresh($on = TRUE)
 	{
@@ -347,7 +347,7 @@ class RobotLoader
 
 
 	/**
-	 * @return self
+	 * @return static
 	 */
 	public function setCacheStorage(Nette\Caching\IStorage $storage)
 	{
