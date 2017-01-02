@@ -417,14 +417,14 @@ class RobotLoader
 		if (!$this->tempDirectory) {
 			throw new \LogicException('Set path to temporary directory using setTempDirectory().');
 		}
-		return $this->tempDirectory . '/' . md5(serialize($this->getKey())) . '.php';
+		return $this->tempDirectory . '/' . md5(serialize($this->getCacheKey())) . '.php';
 	}
 
 
 	/**
 	 * @return array
 	 */
-	protected function getKey()
+	protected function getCacheKey()
 	{
 		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths];
 	}
