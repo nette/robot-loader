@@ -7,7 +7,6 @@
  */
 
 use Nette\Loaders\RobotLoader;
-use Nette\Caching\Storages\DevNullStorage;
 use Tester\Assert;
 
 
@@ -29,7 +28,7 @@ Phar::loadPhar($pharFile, 'test.phar');
 
 
 $loader = new RobotLoader;
-$loader->setCacheStorage(new DevNullStorage);
+$loader->setTempDirectory(TEMP_DIR);
 $loader->addDirectory("phar://$pharFile/sub");
 $loader->addDirectory("PHAR://$pharFile/class.B.php");
 $loader->addDirectory('phar://test.phar/class.C.php');
@@ -42,7 +41,7 @@ Assert::true(class_exists('D'));
 
 
 $loader = new RobotLoader;
-$loader->setCacheStorage(new DevNullStorage);
+$loader->setTempDirectory(TEMP_DIR);
 $loader->addDirectory("phar://$pharFile/non-dir");
 Assert::exception(function () use ($loader, $pharFile) {
 	$loader->register();
@@ -50,7 +49,7 @@ Assert::exception(function () use ($loader, $pharFile) {
 
 
 $loader = new RobotLoader;
-$loader->setCacheStorage(new DevNullStorage);
+$loader->setTempDirectory(TEMP_DIR);
 $loader->addDirectory("phar://$pharFile/non-file.php");
 Assert::exception(function () use ($loader, $pharFile) {
 	$loader->register();
