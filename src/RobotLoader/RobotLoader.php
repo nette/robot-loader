@@ -143,7 +143,11 @@ class RobotLoader
 	 */
 	public function rebuild()
 	{
-		$this->getCache()->save($this->getKey(), Nette\Utils\Callback::closure($this, 'rebuildCallback'));
+		if ($this->cacheStorage) {
+			$this->getCache()->save($this->getKey(), Nette\Utils\Callback::closure($this, 'rebuildCallback'));
+		} else {
+			$this->rebuildCallback();
+		}
 	}
 
 
