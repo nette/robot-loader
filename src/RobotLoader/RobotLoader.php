@@ -32,7 +32,7 @@ class RobotLoader
 	/** @var array */
 	private $scanPaths = [];
 
-	/** @var array of lowered-class => [file, time, orig] */
+	/** @var array of class => [file, time] */
 	private $classes = [];
 
 	/** @var bool */
@@ -73,8 +73,7 @@ class RobotLoader
 	 */
 	public function tryLoad($type)
 	{
-		$type = $orig = ltrim($type, '\\'); // PHP namespace bug #49143
-		$type = strtolower($type);
+		$type = ltrim($type, '\\'); // PHP namespace bug #49143
 		$info = isset($this->classes[$type]) ? $this->classes[$type] : NULL;
 
 		if ($this->autoRebuild) {
@@ -100,9 +99,6 @@ class RobotLoader
 		}
 
 		if ($info) {
-			if ($info['orig'] !== $orig) {
-				trigger_error("Case mismatch on class name '$orig', correct name is '{$info['orig']}'.", E_USER_WARNING);
-			}
 			call_user_func(function ($file) { require $file; }, $info['file']);
 		}
 	}
@@ -126,8 +122,8 @@ class RobotLoader
 	public function getIndexedClasses()
 	{
 		$res = [];
-		foreach ($this->classes as $info) {
-			$res[$info['orig']] = $info['file'];
+		foreach ($this->classes as $class => $info) {
+			$res[$class] = $info['file'];
 		}
 		return $res;
 	}
@@ -154,9 +150,9 @@ class RobotLoader
 	{
 		$this->refreshed = TRUE; // prevents calling refresh() or updateFile() in tryLoad()
 		$files = [];
-		foreach ($this->classes as $info) {
+		foreach ($this->classes as $class => $info) {
 			$files[$info['file']]['time'] = $info['time'];
-			$files[$info['file']]['classes'][] = $info['orig'];
+			$files[$info['file']]['classes'][] = $class;
 		}
 
 		$this->classes = [];
@@ -171,13 +167,12 @@ class RobotLoader
 				$files[$file] = ['classes' => [], 'time' => filemtime($file)];
 
 				foreach ($classes as $class) {
-					$lower = strtolower($class);
-					$info = &$this->classes[$lower];
+					$info = &$this->classes[$class];
 					if (isset($info['file'])) {
 						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
 					}
-					$info = ['file' => $file, 'time' => filemtime($file), 'orig' => $class];
-					unset($this->missing[$lower]);
+					$info = ['file' => $file, 'time' => filemtime($file)];
+					unset($this->missing[$class]);
 				}
 			}
 		}
@@ -239,15 +234,15 @@ class RobotLoader
 
 		$classes = is_file($file) ? $this->scanPhp(file_get_contents($file)) : [];
 		foreach ($classes as $class) {
-			$info = &$this->classes[strtolower($class)];
+			$info = &$this->classes[$class];
 			if (isset($info['file']) && @filemtime($info['file']) !== $info['time']) { // @ file may not exists
 				$this->updateFile($info['file']);
-				$info = &$this->classes[strtolower($class)];
+				$info = &$this->classes[$class];
 			}
 			if (isset($info['file'])) {
 				throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
 			}
-			$info = ['file' => $file, 'time' => filemtime($file), 'orig' => $class];
+			$info = ['file' => $file, 'time' => filemtime($file)];
 		}
 	}
 
