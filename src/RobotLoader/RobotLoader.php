@@ -8,7 +8,6 @@
 namespace Nette\Loaders;
 
 use Nette;
-use Nette\Caching\Cache;
 use SplFileInfo;
 
 
@@ -42,8 +41,8 @@ class RobotLoader
 	/** @var array of missing classes in this request */
 	private $missing = [];
 
-	/** @var Nette\Caching\IStorage */
-	private $cacheStorage;
+	/** @var string|NULL */
+	private $tempDirectory;
 
 
 	public function __construct()
@@ -61,7 +60,7 @@ class RobotLoader
 	 */
 	public function register($prepend = FALSE)
 	{
-		$this->classes = $this->getCache()->load($this->getKey(), [$this, 'rebuildCallback']);
+		$this->loadCache();
 		spl_autoload_register([$this, 'tryLoad'], TRUE, (bool) $prepend);
 		return $this;
 	}
@@ -85,17 +84,16 @@ class RobotLoader
 		if ($this->autoRebuild) {
 			if (!is_array($info) || !is_file($info['file'])) {
 				$info = is_int($info) ? $info + 1 : 0;
-				if ($this->refreshed) {
-					$this->getCache()->save($this->getKey(), $this->classes);
-				} else {
-					$this->rebuild();
+				if (!$this->refreshed) {
+					$this->refresh();
 				}
+				$this->saveCache();
 			} elseif (!$this->refreshed && filemtime($info['file']) !== $info['time']) {
 				$this->updateFile($info['file']);
 				if (!isset($this->classes[$type])) {
 					$this->classes[$type] = 0;
 				}
-				$this->getCache()->save($this->getKey(), $this->classes);
+				$this->saveCache();
 			}
 		}
 
@@ -143,20 +141,20 @@ class RobotLoader
 	 */
 	public function rebuild()
 	{
-		if ($this->cacheStorage) {
-			$this->getCache()->save($this->getKey(), Nette\Utils\Callback::closure($this, 'rebuildCallback'));
-		} else {
-			$this->rebuildCallback();
+		$this->refresh();
+		if ($this->tempDirectory) {
+			$this->saveCache();
 		}
 	}
 
 
 	/**
-	 * @internal
+	 * Refreshes class list.
+	 * @return void
 	 */
-	public function rebuildCallback()
+	private function refresh()
 	{
-		$this->refreshed = TRUE; // prevents calling rebuild() or updateFile() in tryLoad()
+		$this->refreshed = TRUE; // prevents calling refresh() or updateFile() in tryLoad()
 		$files = $missing = [];
 		foreach ($this->classes as $class => $info) {
 			if (is_array($info)) {
@@ -188,7 +186,6 @@ class RobotLoader
 			}
 		}
 		$this->classes += $missing;
-		return $this->classes;
 	}
 
 
@@ -356,47 +353,71 @@ class RobotLoader
 	 */
 	public function setTempDirectory($dir)
 	{
-		if ($dir) {
-			if (!is_dir($dir)) {
-				@mkdir($dir); // @ - directory may already exist
-			}
-			$this->cacheStorage = new Nette\Caching\Storages\FileStorage($dir);
-		} else {
-			$this->cacheStorage = new Nette\Caching\Storages\DevNullStorage;
+		if (!is_dir($dir)) {
+			@mkdir($dir); // @ - directory may already exist
 		}
+		$this->tempDirectory = $dir;
 		return $this;
 	}
 
 
 	/**
-	 * @return static
+	 * Loads class list from cache.
+	 * @return void
 	 */
-	public function setCacheStorage(Nette\Caching\IStorage $storage)
+	private function loadCache()
 	{
-		$this->cacheStorage = $storage;
-		return $this;
-	}
-
-
-	/**
-	 * @return Nette\Caching\IStorage
-	 */
-	public function getCacheStorage()
-	{
-		return $this->cacheStorage;
-	}
-
-
-	/**
-	 * @return Nette\Caching\Cache
-	 */
-	protected function getCache()
-	{
-		if (!$this->cacheStorage) {
-			trigger_error('Set path to temporary directory using setTempDirectory().', E_USER_WARNING);
-			$this->cacheStorage = new Nette\Caching\Storages\DevNullStorage;
+		$file = $this->getCacheFile();
+		$this->classes = @include $file; // @ file may not exist
+		if (is_array($this->classes)) {
+			return;
 		}
-		return new Cache($this->cacheStorage, 'Nette.RobotLoader');
+
+		$handle = fopen("$file.lock", 'c+');
+		if (!$handle || !flock($handle, LOCK_EX)) {
+			throw new \RuntimeException("Unable to create or acquire exclusive lock on file '$file.lock'.");
+		}
+
+		$this->classes = @include $file; // @ file may not exist
+		if (!is_array($this->classes)) {
+			$this->classes = [];
+			$this->refresh();
+			$this->saveCache();
+		}
+
+		flock($handle, LOCK_UN);
+		fclose($handle);
+		@unlink("$file.lock"); // @ file may become locked on Windows
+	}
+
+
+	/**
+	 * Writes class list to cache.
+	 * @return void
+	 */
+	private function saveCache()
+	{
+		$file = $this->getCacheFile();
+		$code = "<?php\nreturn " . var_export($this->classes, TRUE) . ";\n";
+		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
+			@unlink("$file.tmp"); // @ - file may not exist
+			throw new \RuntimeException("Unable to create '$file'.");
+		}
+		if (function_exists('opcache_invalidate')) {
+			@opcache_invalidate($file, TRUE); // @ can be restricted
+		}
+	}
+
+
+	/**
+	 * @return string
+	 */
+	private function getCacheFile()
+	{
+		if (!$this->tempDirectory) {
+			throw new \LogicException('Set path to temporary directory using setTempDirectory().');
+		}
+		return $this->tempDirectory . '/' . md5(serialize($this->getKey())) . '.php';
 	}
 
 
