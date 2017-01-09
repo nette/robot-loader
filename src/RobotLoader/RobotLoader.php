@@ -77,7 +77,7 @@ class RobotLoader
 		$type = $orig = ltrim($type, '\\'); // PHP namespace bug #49143
 		$type = strtolower($type);
 
-		$info = & $this->classes[$type];
+		$info = &$this->classes[$type];
 		if (isset($this->missing[$type]) || (is_int($info) && $info >= self::RETRY_LIMIT)) {
 			return;
 		}
@@ -179,7 +179,7 @@ class RobotLoader
 				$files[$file] = ['classes' => [], 'time' => filemtime($file)];
 
 				foreach ($classes as $class) {
-					$info = & $this->classes[strtolower($class)];
+					$info = &$this->classes[strtolower($class)];
 					if (isset($info['file'])) {
 						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
 					}
@@ -212,12 +212,12 @@ class RobotLoader
 		}
 
 		$iterator = Nette\Utils\Finder::findFiles(is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles))
-			->filter(function (SplFileInfo $file) use (& $disallow) {
+			->filter(function (SplFileInfo $file) use (&$disallow) {
 				return !isset($disallow[$file->getPathname()]);
 			})
 			->from($dir)
 			->exclude($ignoreDirs)
-			->filter($filter = function (SplFileInfo $dir) use (& $disallow) {
+			->filter($filter = function (SplFileInfo $dir) use (&$disallow) {
 				$path = $dir->getPathname();
 				if (is_file("$path/netterobots.txt")) {
 					foreach (file("$path/netterobots.txt") as $s) {
@@ -247,10 +247,10 @@ class RobotLoader
 
 		if (is_file($file)) {
 			foreach ($this->scanPhp(file_get_contents($file)) as $class) {
-				$info = & $this->classes[strtolower($class)];
+				$info = &$this->classes[strtolower($class)];
 				if (isset($info['file']) && @filemtime($info['file']) !== $info['time']) { // @ file may not exists
 					$this->updateFile($info['file']);
-					$info = & $this->classes[strtolower($class)];
+					$info = &$this->classes[strtolower($class)];
 				}
 				if (isset($info['file'])) {
 					throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
