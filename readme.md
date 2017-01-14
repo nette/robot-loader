@@ -33,7 +33,7 @@ $loader = new Nette\Loaders\RobotLoader;
 // Add directories for RobotLoader to index
 $loader->addDirectory('app');
 $loader->addDirectory('libs');
-// And set caching to the 'temp' directory on the disc
+// And set caching to the 'temp' directory
 $loader->setTempDirectory('temp');
 $loader->register(); // Run the RobotLoader
 ```
