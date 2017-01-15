@@ -32,13 +32,13 @@ class RobotLoader
 	/** @var array */
 	private $scanPaths = [];
 
-	/** @var array of lowered-class => [file, time, orig] or num-of-retry */
+	/** @var array of lowered-class => [file, time, orig] */
 	private $classes = [];
 
 	/** @var bool */
 	private $refreshed = FALSE;
 
-	/** @var array of missing classes in this request */
+	/** @var array of missing classes */
 	private $missing = [];
 
 	/** @var string|NULL */
@@ -75,35 +75,35 @@ class RobotLoader
 	{
 		$type = $orig = ltrim($type, '\\'); // PHP namespace bug #49143
 		$type = strtolower($type);
-
-		$info = &$this->classes[$type];
-		if (isset($this->missing[$type]) || (is_int($info) && $info >= self::RETRY_LIMIT)) {
-			return;
-		}
+		$info = isset($this->classes[$type]) ? $this->classes[$type] : NULL;
 
 		if ($this->autoRebuild) {
-			if (!is_array($info) || !is_file($info['file'])) {
-				$info = is_int($info) ? $info + 1 : 0;
-				if (!$this->refreshed) {
+			if (!$info || !is_file($info['file'])) {
+				$missing = & $this->missing[$type];
+				$missing++;
+				if (!$this->refreshed && $missing <= self::RETRY_LIMIT) {
 					$this->refresh();
+					$this->saveCache();
+				} elseif ($info) {
+					unset($this->classes[$type]);
+					$this->saveCache();
 				}
-				$this->saveCache();
+
 			} elseif (!$this->refreshed && filemtime($info['file']) !== $info['time']) {
 				$this->updateFile($info['file']);
-				if (!isset($this->classes[$type])) {
-					$this->classes[$type] = 0;
+				if (empty($this->classes[$type])) {
+					$this->missing[$type] = 0;
 				}
 				$this->saveCache();
 			}
+			$info = isset($this->classes[$type]) ? $this->classes[$type] : NULL;
 		}
 
-		if (isset($this->classes[$type]['file'])) {
-			if ($this->classes[$type]['orig'] !== $orig) {
-				trigger_error("Case mismatch on class name '$orig', correct name is '{$this->classes[$type]['orig']}'.", E_USER_WARNING);
+		if ($info) {
+			if ($info['orig'] !== $orig) {
+				trigger_error("Case mismatch on class name '$orig', correct name is '{$info['orig']}'.", E_USER_WARNING);
 			}
-			call_user_func(function ($file) { require $file; }, $this->classes[$type]['file']);
-		} else {
-			$this->missing[$type] = TRUE;
+			call_user_func(function ($file) { require $file; }, $info['file']);
 		}
 	}
 
@@ -127,9 +127,7 @@ class RobotLoader
 	{
 		$res = [];
 		foreach ($this->classes as $info) {
-			if (is_array($info)) {
-				$res[$info['orig']] = $info['file'];
-			}
+			$res[$info['orig']] = $info['file'];
 		}
 		return $res;
 	}
@@ -155,14 +153,10 @@ class RobotLoader
 	private function refresh()
 	{
 		$this->refreshed = TRUE; // prevents calling refresh() or updateFile() in tryLoad()
-		$files = $missing = [];
-		foreach ($this->classes as $class => $info) {
-			if (is_array($info)) {
-				$files[$info['file']]['time'] = $info['time'];
-				$files[$info['file']]['classes'][] = $info['orig'];
-			} else {
-				$missing[$class] = $info;
-			}
+		$files = [];
+		foreach ($this->classes as $info) {
+			$files[$info['file']]['time'] = $info['time'];
+			$files[$info['file']]['classes'][] = $info['orig'];
 		}
 
 		$this->classes = [];
@@ -177,15 +171,16 @@ class RobotLoader
 				$files[$file] = ['classes' => [], 'time' => filemtime($file)];
 
 				foreach ($classes as $class) {
-					$info = &$this->classes[strtolower($class)];
+					$lower = strtolower($class);
+					$info = &$this->classes[$lower];
 					if (isset($info['file'])) {
 						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
 					}
 					$info = ['file' => $file, 'time' => filemtime($file), 'orig' => $class];
+					unset($this->missing[$lower]);
 				}
 			}
 		}
-		$this->classes += $missing;
 	}
 
 
@@ -242,18 +237,17 @@ class RobotLoader
 			}
 		}
 
-		if (is_file($file)) {
-			foreach ($this->scanPhp(file_get_contents($file)) as $class) {
+		$classes = is_file($file) ? $this->scanPhp(file_get_contents($file)) : [];
+		foreach ($classes as $class) {
+			$info = &$this->classes[strtolower($class)];
+			if (isset($info['file']) && @filemtime($info['file']) !== $info['time']) { // @ file may not exists
+				$this->updateFile($info['file']);
 				$info = &$this->classes[strtolower($class)];
-				if (isset($info['file']) && @filemtime($info['file']) !== $info['time']) { // @ file may not exists
-					$this->updateFile($info['file']);
-					$info = &$this->classes[strtolower($class)];
-				}
-				if (isset($info['file'])) {
-					throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
-				}
-				$info = ['file' => $file, 'time' => filemtime($file), 'orig' => $class];
 			}
+			if (isset($info['file'])) {
+				throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
+			}
+			$info = ['file' => $file, 'time' => filemtime($file), 'orig' => $class];
 		}
 	}
 
@@ -261,7 +255,7 @@ class RobotLoader
 	/**
 	 * Searches classes, interfaces and traits in PHP file.
 	 * @param  string
-	 * @return array
+	 * @return string[]
 	 */
 	private function scanPhp($code)
 	{
@@ -368,7 +362,7 @@ class RobotLoader
 	private function loadCache()
 	{
 		$file = $this->getCacheFile();
-		$this->classes = @include $file; // @ file may not exist
+		list($this->classes, $this->missing) = @include $file; // @ file may not exist
 		if (is_array($this->classes)) {
 			return;
 		}
@@ -378,7 +372,7 @@ class RobotLoader
 			throw new \RuntimeException("Unable to create or acquire exclusive lock on file '$file.lock'.");
 		}
 
-		$this->classes = @include $file; // @ file may not exist
+		list($this->classes, $this->missing) = @include $file; // @ file may not exist
 		if (!is_array($this->classes)) {
 			$this->classes = [];
 			$this->refresh();
@@ -398,7 +392,7 @@ class RobotLoader
 	private function saveCache()
 	{
 		$file = $this->getCacheFile();
-		$code = "<?php\nreturn " . var_export($this->classes, TRUE) . ";\n";
+		$code = "<?php\nreturn " . var_export([$this->classes, $this->missing], TRUE) . ";\n";
 		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
 			@unlink("$file.tmp"); // @ - file may not exist
 			throw new \RuntimeException("Unable to create '$file'.");
