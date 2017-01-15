@@ -42,8 +42,8 @@ And that's all. From now on, you don't need to use `require`. Great, isn't it?
 
 When RobotLoader encounters duplicate class name during indexing, it throws an exception and informs you about it.
 
-The variable `$loader->autoBuild` determines whether RobotLoader should reindex the scripts if asked for nonexistent class.
-This feature is disabled by default on production server.
+The `$loader->setAutoRefresh(TRUE or FALSE)` determines whether RobotLoader should reindex the scripts if asked for nonexistent class.
+This feature should be disabled on production server.
 
 If you want RobotLoader to skip some directory, create a file there called `netterobots.txt`:
 
