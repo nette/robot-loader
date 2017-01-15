@@ -26,8 +26,8 @@ class RobotLoader
 	/** @var string|array  comma separated wildcards */
 	public $acceptFiles = '*.php, *.php5';
 
-	/** @var bool @deprecated */
-	public $autoRebuild = TRUE;
+	/** @var bool */
+	private $autoRebuild = TRUE;
 
 	/** @var array */
 	private $scanPaths = [];
