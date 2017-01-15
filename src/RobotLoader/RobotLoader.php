@@ -24,7 +24,7 @@ class RobotLoader
 	public $ignoreDirs = '.*, *.old, *.bak, *.tmp, temp';
 
 	/** @var string|array  comma separated wildcards */
-	public $acceptFiles = '*.php, *.php5';
+	public $acceptFiles = '*.php';
 
 	/** @var bool */
 	private $autoRebuild = TRUE;
