@@ -19,6 +19,7 @@ $loader->addDirectory(__DIR__ . '/file/interface.php'); // as file
 $loader->addDirectory(__DIR__ . '/file/class.const.php');
 $loader->addDirectory(__DIR__ . '/file/trait.php');
 $loader->addDirectory(__DIR__ . '/files.robots');
+$loader->excludeDirectory(__DIR__ . '/files/exclude');
 $loader->register();
 
 Assert::false(class_exists('ConditionalClass'));   // files/conditional.class.php
@@ -38,3 +39,5 @@ Assert::false(class_exists('Disallowed4'));   // files.robots\subdir\disallowed4
 Assert::false(class_exists('Disallowed5'));   // files.robots\subdir\subdir2\disallowed5\class.php
 Assert::false(class_exists('Disallowed6'));   // files.robots\subdir\subdir2\class.php
 Assert::true(class_exists('Allowed2'));       // files.robots\subdir\subdir2\allowed.php
+
+Assert::false(class_exists('ExcludedClass')); // files/exclude/excluded.php

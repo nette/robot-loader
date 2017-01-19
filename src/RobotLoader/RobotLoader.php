@@ -13,6 +13,14 @@ use SplFileInfo;
 
 /**
  * Nette auto loader is responsible for loading classes and interfaces.
+ *
+ * <code>
+ * $loader = new Nette\Loaders\RobotLoader;
+ * $loader->addDirectory('app');
+ * $loader->excludeDirectory('app/exclude');
+ * $loader->setCacheStorage(new Nette\Caching\Storages\FileStorage('temp'));
+ * $loader->register();
+ * </code>
  */
 class RobotLoader
 {
@@ -31,6 +39,9 @@ class RobotLoader
 
 	/** @var array */
 	private $scanPaths = [];
+
+	/** @var array */
+	private $excludeDirs = [];
 
 	/** @var array of class => [file, time] */
 	private $classes = [];
@@ -111,6 +122,18 @@ class RobotLoader
 	public function addDirectory($path)
 	{
 		$this->scanPaths = array_merge($this->scanPaths, (array) $path);
+		return $this;
+	}
+
+
+	/**
+	 * Excludes path or paths from list.
+	 * @param  string|string[]  absolute path
+	 * @return static
+	 */
+	public function excludeDirectory($path)
+	{
+		$this->excludeDirs = array_merge($this->excludeDirs, (array) $path);
 		return $this;
 	}
 
@@ -205,6 +228,13 @@ class RobotLoader
 			->exclude($ignoreDirs)
 			->filter($filter = function (SplFileInfo $dir) use (&$disallow) {
 				$path = $dir->getPathname();
+
+				foreach ($this->excludeDirs as $exclude) {
+					if (realpath($path) === realpath($exclude)) {
+						return FALSE;
+					}
+				}
+
 				if (is_file("$path/netterobots.txt")) {
 					foreach (file("$path/netterobots.txt") as $s) {
 						if (preg_match('#^(?:disallow\\s*:)?\\s*(\\S+)#i', $s, $matches)) {
