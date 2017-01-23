@@ -194,22 +194,22 @@ class RobotLoader
 		$disallow = [];
 		foreach ($ignoreDirs as $item) {
 			if ($item = realpath($item)) {
-				$disallow[$item] = TRUE;
+				$disallow[str_replace('\\', '/', $item)] = TRUE;
 			}
 		}
 
 		$iterator = Nette\Utils\Finder::findFiles(is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles))
 			->filter(function (SplFileInfo $file) use (&$disallow) {
-				return !isset($disallow[$file->getPathname()]);
+				return !isset($disallow[str_replace('\\', '/', $file->getPathname())]);
 			})
 			->from($dir)
 			->exclude($ignoreDirs)
 			->filter($filter = function (SplFileInfo $dir) use (&$disallow) {
-				$path = $dir->getPathname();
+				$path = str_replace('\\', '/', $dir->getPathname());
 				if (is_file("$path/netterobots.txt")) {
 					foreach (file("$path/netterobots.txt") as $s) {
 						if (preg_match('#^(?:disallow\\s*:)?\\s*(\\S+)#i', $s, $matches)) {
-							$disallow[$path . str_replace('/', DIRECTORY_SEPARATOR, rtrim('/' . ltrim($matches[1], '/'), '/'))] = TRUE;
+							$disallow[$path . rtrim('/' . ltrim($matches[1], '/'), '/')] = TRUE;
 						}
 					}
 				}
