@@ -13,6 +13,14 @@ use SplFileInfo;
 
 /**
  * Nette auto loader is responsible for loading classes and interfaces.
+ *
+ * <code>
+ * $loader = new Nette\Loaders\RobotLoader;
+ * $loader->addDirectory('app');
+ * $loader->excludeDirectory('app/exclude');
+ * $loader->setTempDirectory('temp');
+ * $loader->register();
+ * </code>
  */
 class RobotLoader
 {
@@ -31,6 +39,9 @@ class RobotLoader
 
 	/** @var array */
 	private $scanPaths = [];
+
+	/** @var array */
+	private $excludeDirs = [];
 
 	/** @var array of class => [file, time] */
 	private $classes = [];
@@ -117,6 +128,18 @@ class RobotLoader
 
 
 	/**
+	 * Excludes path or paths from list.
+	 * @param  string|string[]  absolute path
+	 * @return static
+	 */
+	public function excludeDirectory($path)
+	{
+		$this->excludeDirs = array_merge($this->excludeDirs, (array) $path);
+		return $this;
+	}
+
+
+	/**
 	 * @return array of class => filename
 	 */
 	public function getIndexedClasses()
@@ -192,7 +215,7 @@ class RobotLoader
 
 		$ignoreDirs = is_array($this->ignoreDirs) ? $this->ignoreDirs : preg_split('#[,\s]+#', $this->ignoreDirs);
 		$disallow = [];
-		foreach ($ignoreDirs as $item) {
+		foreach (array_merge($ignoreDirs, $this->excludeDirs) as $item) {
 			if ($item = realpath($item)) {
 				$disallow[str_replace('\\', '/', $item)] = TRUE;
 			}
@@ -415,7 +438,7 @@ class RobotLoader
 	 */
 	protected function getCacheKey()
 	{
-		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths];
+		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths, $this->excludeDirs];
 	}
 
 }

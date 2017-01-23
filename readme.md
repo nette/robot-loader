@@ -45,7 +45,7 @@ When RobotLoader encounters duplicate class name during indexing, it throws an e
 The `$loader->setAutoRefresh(TRUE or FALSE)` determines whether RobotLoader should reindex the scripts if asked for nonexistent class.
 This feature should be disabled on production server.
 
-If you want RobotLoader to skip some directory, create a file there called `netterobots.txt`:
+If you want RobotLoader to skip some directory, use `$loader->excludeDirectory('temp')` or create a file there called `netterobots.txt`:
 
 ```
 Disallow: /Zend
