@@ -8,6 +8,7 @@
 namespace Nette\Loaders;
 
 use Nette;
+use Nette\Files\Finder;
 use SplFileInfo;
 
 
@@ -221,7 +222,7 @@ class RobotLoader
 			}
 		}
 
-		$iterator = Nette\Utils\Finder::findFiles(is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles))
+		$iterator = Finder::findFiles(is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles))
 			->filter(function (SplFileInfo $file) use (&$disallow) {
 				return !isset($disallow[str_replace('\\', '/', $file->getPathname())]);
 			})
