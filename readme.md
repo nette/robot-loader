@@ -14,6 +14,8 @@ RobotLoader is a tool that gives you comfort of automated class loading for your
 - requires no strict file naming conventions
 - allows more classes in single file
 
+RobotLoader is extremely comfortable and addictive!
+
 So we can forget about those famous code blocks:
 
 ```php
@@ -45,12 +47,4 @@ When RobotLoader encounters duplicate class name during indexing, it throws an e
 The `$loader->setAutoRefresh(TRUE or FALSE)` determines whether RobotLoader should reindex the scripts if asked for nonexistent class.
 This feature should be disabled on production server.
 
-If you want RobotLoader to skip some directory, use `$loader->excludeDirectory('temp')` or create a file there called `netterobots.txt`:
-
-```
-Disallow: /Zend
-```
-
-From this point on, the Zend directory will not be indexed.
-
-RobotLoader is extremely comfortable and addictive!
+If you want RobotLoader to skip some directory, use `$loader->excludeDirectory('temp')`.
