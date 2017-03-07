@@ -28,11 +28,11 @@ class RobotLoader
 
 	const RETRY_LIMIT = 3;
 
-	/** @var string|array  comma separated wildcards */
-	public $ignoreDirs = '.*, *.old, *.bak, *.tmp, temp';
+	/** @var array  comma separated wildcards */
+	public $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
 
-	/** @var string|array  comma separated wildcards */
-	public $acceptFiles = '*.php';
+	/** @var array  comma separated wildcards */
+	public $acceptFiles = ['*.php'];
 
 	/** @var bool */
 	private $autoRebuild = TRUE;
