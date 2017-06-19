@@ -19,24 +19,24 @@ RobotLoader is extremely comfortable and addictive!
 So we can forget about those famous code blocks:
 
 ```php
-require_once 'Zend/Pdf/Page.php';
-require_once 'Zend/Pdf/Style.php';
-require_once 'Zend/Pdf/Color/GrayScale.php';
-require_once 'Zend/Pdf/Color/Cmyk.php';
+require_once 'Utils/Page.php';
+require_once 'Utils/Style.php';
+require_once 'Utils/Paginator.php';
 ...
 ```
-
 
 Like the Google robot crawls and indexes websites, RobotLoader crawls all PHP scripts and records what classes and interfaces were found in them.
 These records are then saved in cache and used during all subsequent requests. You just need to specifiy what directories to index and where to save the cache:
 
 ```php
 $loader = new Nette\Loaders\RobotLoader;
+
 // Add directories for RobotLoader to index
-$loader->addDirectory('app');
-$loader->addDirectory('libs');
+$loader->addDirectory(__DIR__ . '/app');
+$loader->addDirectory(__DIR__ . '/libs');
+
 // And set caching to the 'temp' directory
-$loader->setTempDirectory('temp');
+$loader->setTempDirectory(__DIR__ . '/temp');
 $loader->register(); // Run the RobotLoader
 ```
 
@@ -44,7 +44,7 @@ And that's all. From now on, you don't need to use `require`. Great, isn't it?
 
 When RobotLoader encounters duplicate class name during indexing, it throws an exception and informs you about it.
 
-The `$loader->setAutoRefresh(TRUE or FALSE)` determines whether RobotLoader should reindex the scripts if asked for nonexistent class.
+The `$loader->setAutoRefresh(TRUE or FALSE)` determines whether RobotLoader should reindex files if asked for nonexistent class.
 This feature should be disabled on production server.
 
 If you want RobotLoader to skip some directory, use `$loader->excludeDirectory('temp')`.
