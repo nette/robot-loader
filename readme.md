@@ -26,7 +26,16 @@ require_once 'Utils/Paginator.php';
 ```
 
 Like the Google robot crawls and indexes websites, RobotLoader crawls all PHP scripts and records what classes and interfaces were found in them.
-These records are then saved in cache and used during all subsequent requests. You just need to specifiy what directories to index and where to save the cache:
+These records are then saved in cache and used during all subsequent requests. You just need to specifiy what directories to index and where to save the cache.
+
+Install it using Composer:
+
+```
+composer require nette/robot-loader
+```
+
+It requires PHP version 5.6 or newer (is compatible with PHP 7.0 and 7.1).
+
 
 ```php
 $loader = new Nette\Loaders\RobotLoader;
