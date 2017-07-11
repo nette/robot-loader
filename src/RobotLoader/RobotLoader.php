@@ -89,7 +89,7 @@ class RobotLoader
 
 		if ($this->autoRebuild) {
 			if (!$info || !is_file($info['file'])) {
-				$missing = & $this->missing[$type];
+				$missing = &$this->missing[$type];
 				$missing++;
 				if (!$this->refreshed && $missing <= self::RETRY_LIMIT) {
 					$this->refresh();
@@ -282,7 +282,7 @@ class RobotLoader
 		$level = $minLevel = 0;
 		$classes = [];
 
-		if (preg_match('#//nette'.'loader=(\S*)#', $code, $matches)) {
+		if (preg_match('#//nette' . 'loader=(\S*)#', $code, $matches)) {
 			foreach (explode(',', $matches[1]) as $name) {
 				$classes[] = $name;
 			}
@@ -440,5 +440,4 @@ class RobotLoader
 	{
 		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths, $this->excludeDirs];
 	}
-
 }
