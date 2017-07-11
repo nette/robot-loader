@@ -1,6 +1,6 @@
 <?php
 
-if (FALSE) {
+if (false) {
 	class ConditionalClass
 	{
 	}

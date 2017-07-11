@@ -53,7 +53,7 @@ And that's all. From now on, you don't need to use `require`. Great, isn't it?
 
 When RobotLoader encounters duplicate class name during indexing, it throws an exception and informs you about it.
 
-The `$loader->setAutoRefresh(TRUE or FALSE)` determines whether RobotLoader should reindex files if asked for nonexistent class.
+The `$loader->setAutoRefresh(true or false)` determines whether RobotLoader should reindex files if asked for nonexistent class.
 This feature should be disabled on production server.
 
 If you want RobotLoader to skip some directory, use `$loader->excludeDirectory('temp')`.

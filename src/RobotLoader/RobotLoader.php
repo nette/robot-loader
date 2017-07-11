@@ -35,7 +35,7 @@ class RobotLoader
 	public $acceptFiles = ['*.php'];
 
 	/** @var bool */
-	private $autoRebuild = TRUE;
+	private $autoRebuild = true;
 
 	/** @var array */
 	private $scanPaths = [];
@@ -47,12 +47,12 @@ class RobotLoader
 	private $classes = [];
 
 	/** @var bool */
-	private $refreshed = FALSE;
+	private $refreshed = false;
 
 	/** @var array of missing classes */
 	private $missing = [];
 
-	/** @var string|NULL */
+	/** @var string|null */
 	private $tempDirectory;
 
 
@@ -69,10 +69,10 @@ class RobotLoader
 	 * @param  bool  prepend autoloader?
 	 * @return static
 	 */
-	public function register($prepend = FALSE)
+	public function register($prepend = false)
 	{
 		$this->loadCache();
-		spl_autoload_register([$this, 'tryLoad'], TRUE, (bool) $prepend);
+		spl_autoload_register([$this, 'tryLoad'], true, (bool) $prepend);
 		return $this;
 	}
 
@@ -85,7 +85,7 @@ class RobotLoader
 	public function tryLoad($type)
 	{
 		$type = ltrim($type, '\\'); // PHP namespace bug #49143
-		$info = isset($this->classes[$type]) ? $this->classes[$type] : NULL;
+		$info = isset($this->classes[$type]) ? $this->classes[$type] : null;
 
 		if ($this->autoRebuild) {
 			if (!$info || !is_file($info['file'])) {
@@ -106,7 +106,7 @@ class RobotLoader
 				}
 				$this->saveCache();
 			}
-			$info = isset($this->classes[$type]) ? $this->classes[$type] : NULL;
+			$info = isset($this->classes[$type]) ? $this->classes[$type] : null;
 		}
 
 		if ($info) {
@@ -171,7 +171,7 @@ class RobotLoader
 	 */
 	private function refresh()
 	{
-		$this->refreshed = TRUE; // prevents calling refresh() or updateFile() in tryLoad()
+		$this->refreshed = true; // prevents calling refresh() or updateFile() in tryLoad()
 		$files = [];
 		foreach ($this->classes as $class => $info) {
 			$files[$info['file']]['time'] = $info['time'];
@@ -217,7 +217,7 @@ class RobotLoader
 		$disallow = [];
 		foreach (array_merge($ignoreDirs, $this->excludeDirs) as $item) {
 			if ($item = realpath($item)) {
-				$disallow[str_replace('\\', '/', $item)] = TRUE;
+				$disallow[str_replace('\\', '/', $item)] = true;
 			}
 		}
 
@@ -232,7 +232,7 @@ class RobotLoader
 				if (is_file("$path/netterobots.txt")) {
 					foreach (file("$path/netterobots.txt") as $s) {
 						if (preg_match('#^(?:disallow\\s*:)?\\s*(\\S+)#i', $s, $matches)) {
-							$disallow[$path . rtrim('/' . ltrim($matches[1], '/'), '/')] = TRUE;
+							$disallow[$path . rtrim('/' . ltrim($matches[1], '/'), '/')] = true;
 						}
 					}
 				}
@@ -277,7 +277,7 @@ class RobotLoader
 	 */
 	private function scanPhp($code)
 	{
-		$expected = FALSE;
+		$expected = false;
 		$namespace = '';
 		$level = $minLevel = 0;
 		$classes = [];
@@ -332,7 +332,7 @@ class RobotLoader
 						$minLevel = $token === '{' ? 1 : 0;
 				}
 
-				$expected = NULL;
+				$expected = null;
 			}
 
 			if ($token === '{') {
@@ -352,7 +352,7 @@ class RobotLoader
 	 * Sets auto-refresh mode.
 	 * @return static
 	 */
-	public function setAutoRefresh($on = TRUE)
+	public function setAutoRefresh($on = true)
 	{
 		$this->autoRebuild = (bool) $on;
 		return $this;
@@ -410,13 +410,13 @@ class RobotLoader
 	private function saveCache()
 	{
 		$file = $this->getCacheFile();
-		$code = "<?php\nreturn " . var_export([$this->classes, $this->missing], TRUE) . ";\n";
+		$code = "<?php\nreturn " . var_export([$this->classes, $this->missing], true) . ";\n";
 		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
 			@unlink("$file.tmp"); // @ - file may not exist
 			throw new \RuntimeException("Unable to create '$file'.");
 		}
 		if (function_exists('opcache_invalidate')) {
-			@opcache_invalidate($file, TRUE); // @ can be restricted
+			@opcache_invalidate($file, true); // @ can be restricted
 		}
 	}
 
