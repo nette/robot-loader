@@ -28,7 +28,7 @@ class RobotLoader
 	public $acceptFiles = '*.php, *.php5';
 
 	/** @var bool @deprecated */
-	public $autoRebuild = TRUE;
+	public $autoRebuild = true;
 
 	/** @var array */
 	private $scanPaths = [];
@@ -37,7 +37,7 @@ class RobotLoader
 	private $classes = [];
 
 	/** @var bool */
-	private $refreshed = FALSE;
+	private $refreshed = false;
 
 	/** @var array of missing classes in this request */
 	private $missing = [];
@@ -59,10 +59,10 @@ class RobotLoader
 	 * @param  bool  prepend autoloader?
 	 * @return static
 	 */
-	public function register($prepend = FALSE)
+	public function register($prepend = false)
 	{
 		$this->classes = $this->getCache()->load($this->getKey(), [$this, 'rebuildCallback']);
-		spl_autoload_register([$this, 'tryLoad'], TRUE, (bool) $prepend);
+		spl_autoload_register([$this, 'tryLoad'], true, (bool) $prepend);
 		return $this;
 	}
 
@@ -105,7 +105,7 @@ class RobotLoader
 			}
 			call_user_func(function ($file) { require $file; }, $this->classes[$type]['file']);
 		} else {
-			$this->missing[$type] = TRUE;
+			$this->missing[$type] = true;
 		}
 	}
 
@@ -156,7 +156,7 @@ class RobotLoader
 	 */
 	public function rebuildCallback()
 	{
-		$this->refreshed = TRUE; // prevents calling rebuild() or updateFile() in tryLoad()
+		$this->refreshed = true; // prevents calling rebuild() or updateFile() in tryLoad()
 		$files = $missing = [];
 		foreach ($this->classes as $class => $info) {
 			if (is_array($info)) {
@@ -207,7 +207,7 @@ class RobotLoader
 		$disallow = [];
 		foreach ($ignoreDirs as $item) {
 			if ($item = realpath($item)) {
-				$disallow[$item] = TRUE;
+				$disallow[$item] = true;
 			}
 		}
 
@@ -222,7 +222,7 @@ class RobotLoader
 				if (is_file("$path/netterobots.txt")) {
 					foreach (file("$path/netterobots.txt") as $s) {
 						if (preg_match('#^(?:disallow\\s*:)?\\s*(\\S+)#i', $s, $matches)) {
-							$disallow[$path . str_replace('/', DIRECTORY_SEPARATOR, rtrim('/' . ltrim($matches[1], '/'), '/'))] = TRUE;
+							$disallow[$path . str_replace('/', DIRECTORY_SEPARATOR, rtrim('/' . ltrim($matches[1], '/'), '/'))] = true;
 						}
 					}
 				}
@@ -268,7 +268,7 @@ class RobotLoader
 	 */
 	private function scanPhp($code)
 	{
-		$expected = FALSE;
+		$expected = false;
 		$namespace = '';
 		$level = $minLevel = 0;
 		$classes = [];
@@ -323,7 +323,7 @@ class RobotLoader
 						$minLevel = $token === '{' ? 1 : 0;
 				}
 
-				$expected = NULL;
+				$expected = null;
 			}
 
 			if ($token === '{') {
@@ -343,7 +343,7 @@ class RobotLoader
 	 * Sets auto-refresh mode.
 	 * @return static
 	 */
-	public function setAutoRefresh($on = TRUE)
+	public function setAutoRefresh($on = true)
 	{
 		$this->autoRebuild = (bool) $on;
 		return $this;
