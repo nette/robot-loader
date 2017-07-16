@@ -1,6 +1,7 @@
 {
 	"name": "nette/robot-loader",
-	"description": "Nette RobotLoader: comfortable autoloading",
+	"description": "🍀 Nette RobotLoader: high performance and comfortable autoloader that will search and autoload classes within your application.",
+	"keywords": ["nette", "autoload", "class", "trait", "interface"],
 	"homepage": "https://nette.org",
 	"license": ["BSD-3-Clause", "GPL-2.0", "GPL-3.0"],
 	"authors": [
