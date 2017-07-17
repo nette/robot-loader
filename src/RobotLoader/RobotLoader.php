@@ -410,9 +410,10 @@ class RobotLoader
 	private function saveCache()
 	{
 		$file = $this->getCacheFile();
+		$tempFile = $file . uniqid('', true) . '.tmp';
 		$code = "<?php\nreturn " . var_export([$this->classes, $this->missing], true) . ";\n";
-		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
-			@unlink("$file.tmp"); // @ - file may not exist
+		if (file_put_contents($tempFile, $code) !== strlen($code) || !rename($tempFile, $file)) {
+			@unlink($tempFile); // @ - file may not exist
 			throw new \RuntimeException("Unable to create '$file'.");
 		}
 		if (function_exists('opcache_invalidate')) {
