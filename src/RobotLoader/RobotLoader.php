@@ -357,9 +357,7 @@ class RobotLoader
 	public function setTempDirectory($dir)
 	{
 		if ($dir) {
-			if (!is_dir($dir)) {
-				@mkdir($dir); // @ - directory may already exist
-			}
+			Nette\Utils\FileSystem::createDir($dir);
 			$this->cacheStorage = new Nette\Caching\Storages\FileStorage($dir);
 		} else {
 			$this->cacheStorage = new Nette\Caching\Storages\DevNullStorage;
