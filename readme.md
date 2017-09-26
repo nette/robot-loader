@@ -7,6 +7,10 @@ RobotLoader: comfortable autoloading
 [![Latest Stable Version](https://poser.pugx.org/nette/robot-loader/v/stable)](https://github.com/nette/robot-loader/releases)
 [![License](https://img.shields.io/badge/license-New%20BSD-blue.svg)](https://github.com/nette/robot-loader/blob/master/license.md)
 
+
+Introduction
+------------
+
 RobotLoader is a tool that gives you comfort of automated class loading for your entire application including third-party libraries.
 
 - get rid of all `require`
@@ -26,16 +30,27 @@ require_once 'Utils/Paginator.php';
 ```
 
 Like the Google robot crawls and indexes websites, RobotLoader crawls all PHP scripts and records what classes and interfaces were found in them.
-These records are then saved in cache and used during all subsequent requests. You just need to specifiy what directories to index and where to save the cache.
+These records are then saved in cache and used during all subsequent requests.
 
-Install it using Composer:
+Documentation can be found on the [website](https://doc.nette.org/robotloader).
+
+
+Installation
+------------
+
+The recommended way to install is via Composer:
 
 ```
 composer require nette/robot-loader
 ```
 
-It requires PHP version 5.6 or newer (is compatible with PHP 7.0 and 7.1).
+It requires PHP version 5.6 and supports PHP up to 7.2.
 
+
+Usage
+-----
+
+You just need to specifiy what directories to index and where to save the cache:
 
 ```php
 $loader = new Nette\Loaders\RobotLoader;
