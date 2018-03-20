@@ -66,7 +66,7 @@ class RobotLoader
 
 	/**
 	 * Register autoloader.
-	 * @param  bool  prepend autoloader?
+	 * @param  bool  $prepend
 	 * @return static
 	 */
 	public function register($prepend = false)
@@ -79,7 +79,7 @@ class RobotLoader
 
 	/**
 	 * Handles autoloading of classes, interfaces or traits.
-	 * @param  string
+	 * @param  string  $type
 	 * @return void
 	 */
 	public function tryLoad($type)
@@ -117,7 +117,7 @@ class RobotLoader
 
 	/**
 	 * Add path or paths to list.
-	 * @param  string|string[]  absolute path
+	 * @param  string|string[]  $path  absolute path
 	 * @return static
 	 */
 	public function addDirectory($path)
@@ -129,7 +129,7 @@ class RobotLoader
 
 	/**
 	 * Excludes path or paths from list.
-	 * @param  string|string[]  absolute path
+	 * @param  string|string[]  $path  absolute path
 	 * @return static
 	 */
 	public function excludeDirectory($path)
@@ -272,7 +272,7 @@ class RobotLoader
 
 	/**
 	 * Searches classes, interfaces and traits in PHP file.
-	 * @param  string
+	 * @param  string  $code
 	 * @return string[]
 	 */
 	private function scanPhp($code)
