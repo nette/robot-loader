@@ -72,7 +72,7 @@ class RobotLoader
 	public function register($prepend = false)
 	{
 		$this->loadCache();
-		spl_autoload_register([$this, 'tryLoad'], true, (bool) $prepend);
+		spl_autoload_register([$this, 'tryLoad'], true, $prepend);
 		return $this;
 	}
 
@@ -204,7 +204,7 @@ class RobotLoader
 
 	/**
 	 * Creates an iterator scaning directory for PHP files, subdirectories and 'netterobots.txt' files.
-	 * @return \Iterator
+	 * @return Nette\Utils\Finder
 	 * @throws Nette\IOException if path is not found
 	 */
 	private function createFileIterator($dir)
