@@ -20,6 +20,7 @@ $loader->addDirectory(__DIR__ . '/file/class.const.php');
 $loader->addDirectory(__DIR__ . '/file/trait.php');
 $loader->addDirectory(__DIR__ . '/files.robots');
 $loader->excludeDirectory(__DIR__ . '/files/exclude');
+$loader->excludeDirectory(__DIR__ . '/files/exclude2/excluded.php');
 $loader->register();
 
 Assert::false(class_exists('ConditionalClass'));   // files/conditional.class.php
@@ -41,3 +42,4 @@ Assert::false(class_exists('Disallowed6'));   // files.robots\subdir\subdir2\cla
 Assert::true(class_exists('Allowed2'));       // files.robots\subdir\subdir2\allowed.php
 
 Assert::false(class_exists('ExcludedClass')); // files/exclude/excluded.php
+Assert::false(class_exists('Excluded2Class')); // files/exclude2/excluded.php
