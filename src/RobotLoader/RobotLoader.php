@@ -223,12 +223,12 @@ class RobotLoader
 
 		$iterator = Nette\Utils\Finder::findFiles(is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles))
 			->filter(function (SplFileInfo $file) use (&$disallow) {
-				return !isset($disallow[str_replace('\\', '/', $file->getPathname())]);
+				return !isset($disallow[str_replace('\\', '/', $file->getRealPath())]);
 			})
 			->from($dir)
 			->exclude($ignoreDirs)
 			->filter($filter = function (SplFileInfo $dir) use (&$disallow) {
-				$path = str_replace('\\', '/', $dir->getPathname());
+				$path = str_replace('\\', '/', $dir->getRealPath());
 				if (is_file("$path/netterobots.txt")) {
 					foreach (file("$path/netterobots.txt") as $s) {
 						if (preg_match('#^(?:disallow\\s*:)?\\s*(\\S+)#i', $s, $matches)) {
