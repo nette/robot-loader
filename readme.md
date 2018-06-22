@@ -20,6 +20,8 @@ RobotLoader is a tool that gives you comfort of automated class loading for your
 
 RobotLoader is extremely comfortable and addictive!
 
+If you like Nette, **[please make a donation now](https://nette.org/donate)**. Thank you!
+
 So we can forget about those famous code blocks:
 
 ```php
