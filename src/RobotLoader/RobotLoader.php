@@ -289,7 +289,16 @@ class RobotLoader
 			return $classes;
 		}
 
-		foreach (@token_get_all($code) as $token) { // @ can be corrupted or can use newer syntax
+
+		try {
+			$tokens = PHP_VERSION_ID >= 70000
+				? token_get_all($code, TOKEN_PARSE)
+				: @token_get_all($code); // @ can be corrupted or can use newer syntax
+		} catch (\ParseError $e) {
+			$tokens = [];
+		}
+
+		foreach ($tokens as $token) {
 			if (is_array($token)) {
 				switch ($token[0]) {
 					case T_COMMENT:
