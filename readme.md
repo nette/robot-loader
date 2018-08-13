@@ -74,3 +74,5 @@ The `$loader->setAutoRefresh(true or false)` determines whether RobotLoader shou
 This feature should be disabled on production server.
 
 If you want RobotLoader to skip some directory, use `$loader->excludeDirectory('temp')`.
+
+By default, RobotLoader reports errors in PHP files by throwing exception `ParseError` (since PHP 7.0). It can be disabled via `$loader->reportParseErrors(false)`.

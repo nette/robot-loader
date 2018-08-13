@@ -37,6 +37,9 @@ class RobotLoader
 	/** @var bool */
 	private $autoRebuild = true;
 
+	/** @var bool */
+	private $reportParseErrors = true;
+
 	/** @var array */
 	private $scanPaths = [];
 
@@ -128,6 +131,16 @@ class RobotLoader
 
 
 	/**
+	 * @return static
+	 */
+	public function reportParseErrors($on = true)
+	{
+		$this->reportParseErrors = (bool) $on;
+		return $this;
+	}
+
+
+	/**
 	 * Excludes path or paths from list.
 	 * @param  string|string[]  $path  absolute path
 	 * @return static
@@ -185,7 +198,7 @@ class RobotLoader
 				if (isset($files[$file]) && $files[$file]['time'] == filemtime($file)) {
 					$classes = $files[$file]['classes'];
 				} else {
-					$classes = $this->scanPhp(file_get_contents($file));
+					$classes = $this->scanPhp($file);
 				}
 				$files[$file] = ['classes' => [], 'time' => filemtime($file)];
 
@@ -255,7 +268,7 @@ class RobotLoader
 			}
 		}
 
-		$classes = is_file($file) ? $this->scanPhp(file_get_contents($file)) : [];
+		$classes = is_file($file) ? $this->scanPhp($file) : [];
 		foreach ($classes as $class) {
 			$info = &$this->classes[$class];
 			if (isset($info['file']) && @filemtime($info['file']) !== $info['time']) { // @ file may not exists
@@ -272,11 +285,12 @@ class RobotLoader
 
 	/**
 	 * Searches classes, interfaces and traits in PHP file.
-	 * @param  string  $code
+	 * @param  string  $file
 	 * @return string[]
 	 */
-	private function scanPhp($code)
+	private function scanPhp($file)
 	{
+		$code = file_get_contents($file);
 		$expected = false;
 		$namespace = '';
 		$level = $minLevel = 0;
@@ -295,6 +309,12 @@ class RobotLoader
 				? token_get_all($code, TOKEN_PARSE)
 				: @token_get_all($code); // @ can be corrupted or can use newer syntax
 		} catch (\ParseError $e) {
+			if ($this->reportParseErrors) {
+				$rp = new \ReflectionProperty($e, 'file');
+				$rp->setAccessible(true);
+				$rp->setValue($e, $file);
+				throw $e;
+			}
 			$tokens = [];
 		}
 
