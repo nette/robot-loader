@@ -26,7 +26,7 @@ class RobotLoader
 {
 	use Nette\SmartObject;
 
-	const RETRY_LIMIT = 3;
+	private const RETRY_LIMIT = 3;
 
 	/** @var array */
 	public $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
@@ -84,7 +84,7 @@ class RobotLoader
 	public function tryLoad(string $type): void
 	{
 		$type = ltrim($type, '\\'); // PHP namespace bug #49143
-		$info = isset($this->classes[$type]) ? $this->classes[$type] : null;
+		$info = $this->classes[$type] ?? null;
 
 		if ($this->autoRebuild) {
 			if (!$info || !is_file($info['file'])) {
@@ -105,11 +105,11 @@ class RobotLoader
 				}
 				$this->saveCache();
 			}
-			$info = isset($this->classes[$type]) ? $this->classes[$type] : null;
+			$info = $this->classes[$type] ?? null;
 		}
 
 		if ($info) {
-			call_user_func(function ($file) { require $file; }, $info['file']);
+			(function ($file) { require $file; })($info['file']);
 		}
 	}
 
@@ -402,7 +402,7 @@ class RobotLoader
 	private function loadCache(): void
 	{
 		$file = $this->getCacheFile();
-		list($this->classes, $this->missing) = @include $file; // @ file may not exist
+		[$this->classes, $this->missing] = @include $file; // @ file may not exist
 		if (is_array($this->classes)) {
 			return;
 		}
@@ -412,7 +412,7 @@ class RobotLoader
 			throw new \RuntimeException("Unable to create or acquire exclusive lock on file '$file.lock'.");
 		}
 
-		list($this->classes, $this->missing) = @include $file; // @ file may not exist
+		[$this->classes, $this->missing] = @include $file; // @ file may not exist
 		if (!is_array($this->classes)) {
 			$this->rebuild();
 		}
