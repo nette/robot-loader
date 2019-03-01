@@ -231,7 +231,10 @@ class RobotLoader
 			throw new Nette\IOException("File or directory '$dir' not found.");
 		}
 
-		$ignoreDirs = is_array($this->ignoreDirs) ? $this->ignoreDirs : preg_split('#[,\s]+#', $this->ignoreDirs);
+		if (!is_array($ignoreDirs = $this->ignoreDirs)) {
+			trigger_error(__CLASS__ . ': $ignoreDirs must be an array.', E_USER_WARNING);
+			$ignoreDirs = preg_split('#[,\s]+#', $ignoreDirs);
+		}
 		$disallow = [];
 		foreach (array_merge($ignoreDirs, $this->excludeDirs) as $item) {
 			if ($item = realpath($item)) {
@@ -239,7 +242,11 @@ class RobotLoader
 			}
 		}
 
-		$acceptFiles = is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles);
+		if (!is_array($acceptFiles = $this->acceptFiles)) {
+			trigger_error(__CLASS__ . ': $acceptFiles must be an array.', E_USER_WARNING);
+			$acceptFiles = preg_split('#[,\s]+#', $acceptFiles);
+		}
+
 		$iterator = Nette\Utils\Finder::findFiles($acceptFiles)
 			->filter(function (SplFileInfo $file) use (&$disallow) {
 				return !isset($disallow[str_replace('\\', '/', $file->getRealPath())]);
