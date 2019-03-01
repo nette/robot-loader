@@ -14,11 +14,13 @@ Introduction
 RobotLoader is a tool that gives you comfort of automated class loading for your entire application including third-party libraries.
 
 - get rid of all `require`
-- only necessary scripts are loaded
 - requires no strict file naming conventions
 - allows more classes in single file
+- extremely fast
+- no manual cache updates, everything runs automatically
+- highly mature, stable and widely used library
 
-RobotLoader is extremely comfortable and addictive!
+RobotLoader is incredibly comfortable and addictive!
 
 If you like Nette, **[please make a donation now](https://nette.org/donate)**. Thank you!
 
@@ -76,3 +78,36 @@ This feature should be disabled on production server.
 If you want RobotLoader to skip some directory, use `$loader->excludeDirectory('temp')`.
 
 By default, RobotLoader reports errors in PHP files by throwing exception `ParseError` (since PHP 7.0). It can be disabled via `$loader->reportParseErrors(false)`.
+
+
+PHP files analyzer
+------------------
+
+RobotLoader can also be used to find classes, interfaces, and trait in PHP files without using the autoloading feature:
+
+```php
+$loader = new Nette\Loaders\RobotLoader;
+$loader->addDirectory(__DIR__ . '/app');
+
+// Scans directories for classes / intefaces / traits
+$loader->rebuild();
+
+// Returns array of class => filename pairs
+$res = $loader->getIndexedClasses();
+```
+
+When scanning files again, we can use the cache and unmodified files will not be analyzed repeatedly:
+
+```php
+$loader = new Nette\Loaders\RobotLoader;
+$loader->addDirectory(__DIR__ . '/app');
+$loader->setTempDirectory(__DIR__ . '/temp');
+
+// Scans directories using a cache
+$loader->refresh();
+
+// Returns array of class => filename pairs
+$res = $loader->getIndexedClasses();
+```
+
+Enjoy RobotLoader!
