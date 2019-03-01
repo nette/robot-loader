@@ -28,10 +28,10 @@ class RobotLoader
 
 	const RETRY_LIMIT = 3;
 
-	/** @var array  comma separated wildcards */
+	/** @var array */
 	public $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
 
-	/** @var array  comma separated wildcards */
+	/** @var array */
 	public $acceptFiles = ['*.php'];
 
 	/** @var bool */
@@ -171,6 +171,7 @@ class RobotLoader
 	 */
 	public function rebuild()
 	{
+		$this->classes = $this->missing = [];
 		$this->refresh();
 		if ($this->tempDirectory) {
 			$this->saveCache();
@@ -193,7 +194,8 @@ class RobotLoader
 
 		$this->classes = [];
 		foreach ($this->scanPaths as $path) {
-			foreach (is_file($path) ? [new SplFileInfo($path)] : $this->createFileIterator($path) as $file) {
+			$iterator = is_file($path) ? [new SplFileInfo($path)] : $this->createFileIterator($path);
+			foreach ($iterator as $file) {
 				$file = $file->getPathname();
 				if (isset($files[$file]) && $files[$file]['time'] == filemtime($file)) {
 					$classes = $files[$file]['classes'];
@@ -234,7 +236,8 @@ class RobotLoader
 			}
 		}
 
-		$iterator = Nette\Utils\Finder::findFiles(is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles))
+		$acceptFiles = is_array($this->acceptFiles) ? $this->acceptFiles : preg_split('#[,\s]+#', $this->acceptFiles);
+		$iterator = Nette\Utils\Finder::findFiles($acceptFiles)
 			->filter(function (SplFileInfo $file) use (&$disallow) {
 				return !isset($disallow[str_replace('\\', '/', $file->getRealPath())]);
 			})
@@ -419,9 +422,7 @@ class RobotLoader
 
 		list($this->classes, $this->missing) = @include $file; // @ file may not exist
 		if (!is_array($this->classes)) {
-			$this->classes = [];
-			$this->refresh();
-			$this->saveCache();
+			$this->rebuild();
 		}
 
 		flock($handle, LOCK_UN);
