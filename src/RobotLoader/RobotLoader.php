@@ -69,10 +69,8 @@ class RobotLoader
 
 	/**
 	 * Register autoloader.
-	 * @param  bool  $prepend
-	 * @return static
 	 */
-	public function register($prepend = false)
+	public function register(bool $prepend = false): self
 	{
 		$this->loadCache();
 		spl_autoload_register([$this, 'tryLoad'], true, $prepend);
@@ -82,10 +80,8 @@ class RobotLoader
 
 	/**
 	 * Handles autoloading of classes, interfaces or traits.
-	 * @param  string  $type
-	 * @return void
 	 */
-	public function tryLoad($type)
+	public function tryLoad(string $type): void
 	{
 		$type = ltrim($type, '\\'); // PHP namespace bug #49143
 		$info = isset($this->classes[$type]) ? $this->classes[$type] : null;
@@ -120,20 +116,16 @@ class RobotLoader
 
 	/**
 	 * Add path or paths to list.
-	 * @param  string|string[]  $path  absolute path
-	 * @return static
+	 * @param  string|string[] $path  absolute path
 	 */
-	public function addDirectory($path)
+	public function addDirectory($path): self
 	{
 		$this->scanPaths = array_merge($this->scanPaths, (array) $path);
 		return $this;
 	}
 
 
-	/**
-	 * @return static
-	 */
-	public function reportParseErrors($on = true)
+	public function reportParseErrors(bool $on = true): self
 	{
 		$this->reportParseErrors = (bool) $on;
 		return $this;
@@ -142,10 +134,9 @@ class RobotLoader
 
 	/**
 	 * Excludes path or paths from list.
-	 * @param  string|string[]  $path  absolute path
-	 * @return static
+	 * @param  string|string[] $path  absolute path
 	 */
-	public function excludeDirectory($path)
+	public function excludeDirectory($path): self
 	{
 		$this->excludeDirs = array_merge($this->excludeDirs, (array) $path);
 		return $this;
@@ -155,7 +146,7 @@ class RobotLoader
 	/**
 	 * @return array of class => filename
 	 */
-	public function getIndexedClasses()
+	public function getIndexedClasses(): array
 	{
 		$res = [];
 		foreach ($this->classes as $class => $info) {
@@ -167,9 +158,8 @@ class RobotLoader
 
 	/**
 	 * Rebuilds class list cache.
-	 * @return void
 	 */
-	public function rebuild()
+	public function rebuild(): void
 	{
 		$this->classes = $this->missing = [];
 		$this->refreshClasses();
@@ -181,9 +171,8 @@ class RobotLoader
 
 	/**
 	 * Refreshes class list cache.
-	 * @return void
 	 */
-	public function refresh()
+	public function refresh(): void
 	{
 		$this->loadCache();
 		if (!$this->refreshed) {
@@ -195,9 +184,8 @@ class RobotLoader
 
 	/**
 	 * Refreshes $classes.
-	 * @return void
 	 */
-	private function refreshClasses()
+	private function refreshClasses(): void
 	{
 		$this->refreshed = true; // prevents calling refreshClasses() or updateFile() in tryLoad()
 		$files = [];
@@ -233,10 +221,9 @@ class RobotLoader
 
 	/**
 	 * Creates an iterator scaning directory for PHP files, subdirectories and 'netterobots.txt' files.
-	 * @return Nette\Utils\Finder
 	 * @throws Nette\IOException if path is not found
 	 */
-	private function createFileIterator($dir)
+	private function createFileIterator(string $dir): Nette\Utils\Finder
 	{
 		if (!is_dir($dir)) {
 			throw new Nette\IOException("File or directory '$dir' not found.");
@@ -274,10 +261,7 @@ class RobotLoader
 	}
 
 
-	/**
-	 * @return void
-	 */
-	private function updateFile($file)
+	private function updateFile(string $file): void
 	{
 		foreach ($this->classes as $class => $info) {
 			if (isset($info['file']) && $info['file'] === $file) {
@@ -302,10 +286,9 @@ class RobotLoader
 
 	/**
 	 * Searches classes, interfaces and traits in PHP file.
-	 * @param  string  $file
 	 * @return string[]
 	 */
-	private function scanPhp($file)
+	private function scanPhp(string $file): array
 	{
 		$code = file_get_contents($file);
 		$expected = false;
@@ -394,9 +377,8 @@ class RobotLoader
 
 	/**
 	 * Sets auto-refresh mode.
-	 * @return static
 	 */
-	public function setAutoRefresh($on = true)
+	public function setAutoRefresh(bool $on = true): self
 	{
 		$this->autoRebuild = (bool) $on;
 		return $this;
@@ -405,9 +387,8 @@ class RobotLoader
 
 	/**
 	 * Sets path to temporary directory.
-	 * @return static
 	 */
-	public function setTempDirectory($dir)
+	public function setTempDirectory(string $dir): self
 	{
 		Nette\Utils\FileSystem::createDir($dir);
 		$this->tempDirectory = $dir;
@@ -417,9 +398,8 @@ class RobotLoader
 
 	/**
 	 * Loads class list from cache.
-	 * @return void
 	 */
-	private function loadCache()
+	private function loadCache(): void
 	{
 		$file = $this->getCacheFile();
 		list($this->classes, $this->missing) = @include $file; // @ file may not exist
@@ -445,9 +425,8 @@ class RobotLoader
 
 	/**
 	 * Writes class list to cache.
-	 * @return void
 	 */
-	private function saveCache()
+	private function saveCache(): void
 	{
 		$file = $this->getCacheFile();
 		$tempFile = $file . uniqid('', true) . '.tmp';
@@ -462,10 +441,7 @@ class RobotLoader
 	}
 
 
-	/**
-	 * @return string
-	 */
-	private function getCacheFile()
+	private function getCacheFile(): string
 	{
 		if (!$this->tempDirectory) {
 			throw new \LogicException('Set path to temporary directory using setTempDirectory().');
@@ -474,10 +450,7 @@ class RobotLoader
 	}
 
 
-	/**
-	 * @return array
-	 */
-	protected function getCacheKey()
+	protected function getCacheKey(): array
 	{
 		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths, $this->excludeDirs];
 	}
