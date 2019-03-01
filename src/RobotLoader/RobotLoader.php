@@ -95,7 +95,7 @@ class RobotLoader
 				$missing = &$this->missing[$type];
 				$missing++;
 				if (!$this->refreshed && $missing <= self::RETRY_LIMIT) {
-					$this->refresh();
+					$this->refreshClasses();
 					$this->saveCache();
 				} elseif ($info) {
 					unset($this->classes[$type]);
@@ -172,7 +172,7 @@ class RobotLoader
 	public function rebuild()
 	{
 		$this->classes = $this->missing = [];
-		$this->refresh();
+		$this->refreshClasses();
 		if ($this->tempDirectory) {
 			$this->saveCache();
 		}
@@ -180,12 +180,26 @@ class RobotLoader
 
 
 	/**
-	 * Refreshes class list.
+	 * Refreshes class list cache.
 	 * @return void
 	 */
-	private function refresh()
+	public function refresh()
 	{
-		$this->refreshed = true; // prevents calling refresh() or updateFile() in tryLoad()
+		$this->loadCache();
+		if (!$this->refreshed) {
+			$this->refreshClasses();
+			$this->saveCache();
+		}
+	}
+
+
+	/**
+	 * Refreshes $classes.
+	 * @return void
+	 */
+	private function refreshClasses()
+	{
+		$this->refreshed = true; // prevents calling refreshClasses() or updateFile() in tryLoad()
 		$files = [];
 		foreach ($this->classes as $class => $info) {
 			$files[$info['file']]['time'] = $info['time'];
