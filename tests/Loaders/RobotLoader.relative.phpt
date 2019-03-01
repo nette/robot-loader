@@ -4,6 +4,8 @@
  * Test: Nette\Loaders\RobotLoader and relative parent dirs.
  */
 
+declare(strict_types=1);
+
 use Nette\Loaders\RobotLoader;
 use Tester\Assert;
 

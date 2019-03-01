@@ -4,6 +4,8 @@
  * Test: Nette\Loaders\RobotLoader basic usage.
  */
 
+declare(strict_types=1);
+
 use Nette\Loaders\RobotLoader;
 use Tester\Assert;
 

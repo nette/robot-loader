@@ -6,6 +6,8 @@
  * @phpIni phar.readonly=0
  */
 
+declare(strict_types=1);
+
 use Nette\Loaders\RobotLoader;
 use Tester\Assert;
 
