@@ -322,9 +322,7 @@ class RobotLoader
 
 
 		try {
-			$tokens = PHP_VERSION_ID >= 70000
-				? token_get_all($code, TOKEN_PARSE)
-				: @token_get_all($code); // @ can be corrupted or can use newer syntax
+			$tokens = token_get_all($code, TOKEN_PARSE);
 		} catch (\ParseError $e) {
 			if ($this->reportParseErrors) {
 				$rp = new \ReflectionProperty($e, 'file');
