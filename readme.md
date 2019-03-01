@@ -48,7 +48,7 @@ The recommended way to install is via Composer:
 composer require nette/robot-loader
 ```
 
-It requires PHP version 5.6 and supports PHP up to 7.3.
+It requires PHP version 7.1.
 
 
 Usage
@@ -77,7 +77,7 @@ This feature should be disabled on production server.
 
 If you want RobotLoader to skip some directory, use `$loader->excludeDirectory('temp')`.
 
-By default, RobotLoader reports errors in PHP files by throwing exception `ParseError` (since PHP 7.0). It can be disabled via `$loader->reportParseErrors(false)`.
+By default, RobotLoader reports errors in PHP files by throwing exception `ParseError`. It can be disabled via `$loader->reportParseErrors(false)`.
 
 
 PHP files analyzer
