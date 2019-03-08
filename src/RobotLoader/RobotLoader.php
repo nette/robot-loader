@@ -118,11 +118,15 @@ class RobotLoader
 
 	/**
 	 * Add path or paths to list.
-	 * @param  string|string[] $path  absolute path
+	 * @param  string  ...$paths  absolute path
 	 */
-	public function addDirectory($path): self
+	public function addDirectory(...$paths): self
 	{
-		$this->scanPaths = array_merge($this->scanPaths, (array) $path);
+		if (is_array($paths[0])) {
+			trigger_error(__METHOD__ . '() use variadics ...$paths to add an array of paths.', E_USER_WARNING);
+			$paths = $paths[0];
+		}
+		$this->scanPaths = array_merge($this->scanPaths, $paths);
 		return $this;
 	}
 
@@ -136,11 +140,15 @@ class RobotLoader
 
 	/**
 	 * Excludes path or paths from list.
-	 * @param  string|string[] $path  absolute path
+	 * @param  string  ...$paths  absolute path
 	 */
-	public function excludeDirectory($path): self
+	public function excludeDirectory(...$paths): self
 	{
-		$this->excludeDirs = array_merge($this->excludeDirs, (array) $path);
+		if (is_array($paths[0])) {
+			trigger_error(__METHOD__ . '() use variadics ...$paths to add an array of paths.', E_USER_WARNING);
+			$paths = $paths[0];
+		}
+		$this->excludeDirs = array_merge($this->excludeDirs, $paths);
 		return $this;
 	}
 
