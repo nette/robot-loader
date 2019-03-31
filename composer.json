@@ -17,7 +17,7 @@
 	"require": {
 		"php": ">=7.1",
 		"ext-tokenizer": "*",
-		"nette/finder": "^2.5",
+		"nette/finder": "^2.5 || ^3.0",
 		"nette/utils": "^3.0"
 	},
 	"require-dev": {
