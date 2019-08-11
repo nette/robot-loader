@@ -313,14 +313,6 @@ class RobotLoader
 		$level = $minLevel = 0;
 		$classes = [];
 
-		if (preg_match('#//nette' . 'loader=(\S*)#', $code, $matches)) {
-			foreach (explode(',', $matches[1]) as $name) {
-				$classes[] = $name;
-			}
-			return $classes;
-		}
-
-
 		try {
 			$tokens = token_get_all($code, TOKEN_PARSE);
 		} catch (\ParseError $e) {
