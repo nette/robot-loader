@@ -30,10 +30,10 @@ class RobotLoader
 
 	private const RETRY_LIMIT = 3;
 
-	/** @var array */
+	/** @var string[]|string */
 	public $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
 
-	/** @var array */
+	/** @var string[]|string */
 	public $acceptFiles = ['*.php'];
 
 	/** @var bool */
@@ -42,10 +42,10 @@ class RobotLoader
 	/** @var bool */
 	private $reportParseErrors = true;
 
-	/** @var array */
+	/** @var string[] */
 	private $scanPaths = [];
 
-	/** @var array */
+	/** @var string[] */
 	private $excludeDirs = [];
 
 	/** @var array of class => [file, time] */
@@ -118,7 +118,7 @@ class RobotLoader
 
 	/**
 	 * Add path or paths to list.
-	 * @param  string  ...$paths  absolute path
+	 * @param  string|string[]  ...$paths  absolute path
 	 */
 	public function addDirectory(...$paths): self
 	{
@@ -133,14 +133,14 @@ class RobotLoader
 
 	public function reportParseErrors(bool $on = true): self
 	{
-		$this->reportParseErrors = (bool) $on;
+		$this->reportParseErrors = $on;
 		return $this;
 	}
 
 
 	/**
 	 * Excludes path or paths from list.
-	 * @param  string  ...$paths  absolute path
+	 * @param  string|string[]  ...$paths  absolute path
 	 */
 	public function excludeDirectory(...$paths): self
 	{
@@ -241,7 +241,7 @@ class RobotLoader
 
 		if (!is_array($ignoreDirs = $this->ignoreDirs)) {
 			trigger_error(__CLASS__ . ': $ignoreDirs must be an array.', E_USER_WARNING);
-			$ignoreDirs = preg_split('#[,\s]+#', $ignoreDirs);
+			$ignoreDirs = preg_split('#[,\s]+#', (string) $ignoreDirs);
 		}
 		$disallow = [];
 		foreach (array_merge($ignoreDirs, $this->excludeDirs) as $item) {
@@ -252,7 +252,7 @@ class RobotLoader
 
 		if (!is_array($acceptFiles = $this->acceptFiles)) {
 			trigger_error(__CLASS__ . ': $acceptFiles must be an array.', E_USER_WARNING);
-			$acceptFiles = preg_split('#[,\s]+#', $acceptFiles);
+			$acceptFiles = preg_split('#[,\s]+#', (string) $acceptFiles);
 		}
 
 		$iterator = Nette\Utils\Finder::findFiles($acceptFiles)
@@ -263,8 +263,8 @@ class RobotLoader
 			->exclude($ignoreDirs)
 			->filter($filter = function (SplFileInfo $dir) use (&$disallow) {
 				$path = str_replace('\\', '/', $dir->getRealPath());
-				if (is_file("$path/netterobots.txt")) {
-					foreach (file("$path/netterobots.txt") as $s) {
+				if (is_file($path . '/netterobots.txt')) {
+					foreach (file($path . '/netterobots.txt') as $s) {
 						if (preg_match('#^(?:disallow\\s*:)?\\s*(\\S+)#i', $s, $matches)) {
 							$disallow[$path . rtrim('/' . ltrim($matches[1], '/'), '/')] = true;
 						}
@@ -314,8 +314,8 @@ class RobotLoader
 		$classes = [];
 
 		if (preg_match('#//nette' . 'loader=(\S*)#', $code, $matches)) {
-			foreach (explode(',', $matches[1]) as $name) {
-				$classes[] = $name;
+			foreach (explode(',', $matches[1]) as $className) {
+				$classes[] = $className;
 			}
 			return $classes;
 		}
@@ -333,6 +333,7 @@ class RobotLoader
 			$tokens = [];
 		}
 
+		$name = '';
 		foreach ($tokens as $token) {
 			if (is_array($token)) {
 				switch ($token[0]) {
@@ -397,7 +398,7 @@ class RobotLoader
 	 */
 	public function setAutoRefresh(bool $on = true): self
 	{
-		$this->autoRebuild = (bool) $on;
+		$this->autoRebuild = $on;
 		return $this;
 	}
 
@@ -424,7 +425,7 @@ class RobotLoader
 			return;
 		}
 
-		$handle = fopen("$file.lock", 'c+');
+		$handle = fopen("$file.lock", 'cb+');
 		if (!$handle || !flock($handle, LOCK_EX)) {
 			throw new \RuntimeException("Unable to create or acquire exclusive lock on file '$file.lock'.");
 		}
