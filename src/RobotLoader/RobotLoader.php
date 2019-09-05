@@ -122,7 +122,7 @@ class RobotLoader
 	 */
 	public function addDirectory(...$paths): self
 	{
-		if (is_array($paths[0])) {
+		if (is_array($paths[0] ?? null)) {
 			trigger_error(__METHOD__ . '() use variadics ...$paths to add an array of paths.', E_USER_WARNING);
 			$paths = $paths[0];
 		}
@@ -144,7 +144,7 @@ class RobotLoader
 	 */
 	public function excludeDirectory(...$paths): self
 	{
-		if (is_array($paths[0])) {
+		if (is_array($paths[0] ?? null)) {
 			trigger_error(__METHOD__ . '() use variadics ...$paths to add an array of paths.', E_USER_WARNING);
 			$paths = $paths[0];
 		}
