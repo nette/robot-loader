@@ -13,7 +13,7 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(TEMP_DIR);
+$loader->setTempDirectory(getTempDir());
 
 Assert::noError(
 	function () use ($loader) {

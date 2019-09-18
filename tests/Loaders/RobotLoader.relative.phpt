@@ -14,7 +14,7 @@ require __DIR__ . '/../bootstrap.php';
 
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(TEMP_DIR);
+$loader->setTempDirectory(getTempDir());
 $loader->addDirectory(__DIR__ . '/../Loaders/files');
 $loader->excludeDirectory(__DIR__ . '/../Loaders/files/exclude');
 $loader->excludeDirectory(__DIR__ . '/../Loaders/files/exclude2/excluded.php');

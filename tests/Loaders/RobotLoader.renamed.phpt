@@ -14,10 +14,10 @@ require __DIR__ . '/../bootstrap.php';
 
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(TEMP_DIR);
-$loader->addDirectory(TEMP_DIR);
+$loader->setTempDirectory(getTempDir());
+$loader->addDirectory(getTempDir());
 
-$dir = TEMP_DIR . DIRECTORY_SEPARATOR;
+$dir = getTempDir() . DIRECTORY_SEPARATOR;
 file_put_contents($dir . 'file1.php', '<?php class A {}');
 file_put_contents($dir . 'file2.php', '<?php class B {}');
 

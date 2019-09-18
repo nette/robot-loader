@@ -14,7 +14,7 @@ require __DIR__ . '/../bootstrap.php';
 
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(TEMP_DIR);
+$loader->setTempDirectory(getTempDir());
 $loader->addDirectory(__DIR__ . '/files');
 $loader->addDirectory(__DIR__ . '/files/'); // purposely doubled
 $loader->addDirectory(__DIR__ . '/file/interface.php'); // as file
