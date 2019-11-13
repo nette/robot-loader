@@ -22,6 +22,8 @@ RobotLoader is a tool that gives you comfort of automated class loading for your
 
 RobotLoader is incredibly comfortable and addictive!
 
+It requires PHP version 7.1 and supports PHP up to 7.4.
+
 If you like Nette, **[please make a donation now](https://nette.org/donate)**. Thank you!
 
 So we can forget about those famous code blocks:
