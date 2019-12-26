@@ -111,7 +111,7 @@ class RobotLoader
 		}
 
 		if ($info) {
-			(function ($file) { require $file; })($info['file']);
+			(static function ($file) { require $file; })($info['file']);
 		}
 	}
 
