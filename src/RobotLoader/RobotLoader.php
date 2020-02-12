@@ -411,36 +411,51 @@ class RobotLoader
 	private function loadCache(): void
 	{
 		$file = $this->getCacheFile();
-		[$this->classes, $this->missing] = @include $file; // @ file may not exist
-		if (is_array($this->classes)) {
+		$handle = fopen($file, 'cb+');
+		if (!$handle || !flock($handle, LOCK_SH)) {
+			throw new \RuntimeException("Unable to create or acquire shared lock on file '$file'.");
+		}
+
+		$data = include $file;
+		if (is_array($data)) {
+			[$this->classes, $this->missing] = $data;
 			return;
 		}
 
-		$handle = fopen("$file.lock", 'cb+');
-		if (!$handle || !flock($handle, LOCK_EX)) {
-			throw new \RuntimeException("Unable to create or acquire exclusive lock on file '$file.lock'.");
+		if (!flock($handle, LOCK_EX)) {
+			throw new \RuntimeException("Unable to create or acquire exclusive lock on file '$file'.");
 		}
 
-		[$this->classes, $this->missing] = @include $file; // @ file may not exist
-		if (!is_array($this->classes)) {
-			$this->rebuild();
+		// while waiting for the lock, someone might have already created the cache
+		if (fstat($handle)['size']) {
+			flock($handle, LOCK_SH);
+			$data = include $file;
+			if (is_array($data)) {
+				[$this->classes, $this->missing] = $data;
+				return;
+			}
 		}
 
-		flock($handle, LOCK_UN);
-		fclose($handle);
-		@unlink("$file.lock"); // @ file may become locked on Windows
+		$this->classes = $this->missing = [];
+		$this->refreshClasses();
+		$this->saveCache($handle);
 	}
 
 
 	/**
 	 * Writes class list to cache.
 	 */
-	private function saveCache(): void
+	private function saveCache($handle = null): void
 	{
 		$file = $this->getCacheFile();
+		$handle = $handle ?: fopen($file, 'cb+');
+		if (!$handle || !flock($handle, LOCK_EX)) {
+			throw new \RuntimeException("Unable to create or acquire exclusive lock on file '$file'.");
+		}
+
 		$code = "<?php\nreturn " . var_export([$this->classes, $this->missing], true) . ";\n";
-		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
-			@unlink("$file.tmp"); // @ - file may not exist
+		if (!ftruncate($handle, 0) || fwrite($handle, $code) !== strlen($code)) {
+			@unlink($file); // @ - the locked file may not be deleted
 			throw new \RuntimeException("Unable to create '$file'.");
 		}
 		if (function_exists('opcache_invalidate')) {
