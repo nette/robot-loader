@@ -13,11 +13,13 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 
+$dir = getTempDir() . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR;
+mkdir($dir);
+
 $loader = new RobotLoader;
 $loader->setTempDirectory(getTempDir());
-$loader->addDirectory(getTempDir());
+$loader->addDirectory($dir);
 
-$dir = getTempDir() . DIRECTORY_SEPARATOR;
 file_put_contents($dir . 'file1.php', '<?php class A {}');
 file_put_contents($dir . 'file2.php', '<?php class B {}');
 
