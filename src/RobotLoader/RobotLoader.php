@@ -417,10 +417,7 @@ class RobotLoader
 			return;
 		}
 
-		$handle = fopen("$file.lock", 'cb+');
-		if (!$handle || !flock($handle, LOCK_EX)) {
-			throw new \RuntimeException("Unable to create or acquire exclusive lock on file '$file.lock'.");
-		}
+		$lock = $this->acquireLock("$file.lock", LOCK_EX);
 
 		$data = @include $file; // @ file may not exist
 		if (is_array($data)) {
@@ -429,8 +426,8 @@ class RobotLoader
 			$this->rebuild();
 		}
 
-		flock($handle, LOCK_UN);
-		fclose($handle);
+		flock($lock, LOCK_UN);
+		fclose($lock);
 		@unlink("$file.lock"); // @ file may become locked on Windows
 	}
 
@@ -450,6 +447,18 @@ class RobotLoader
 		if (function_exists('opcache_invalidate')) {
 			@opcache_invalidate($file, true); // @ can be restricted
 		}
+	}
+
+
+	private function acquireLock(string $file, int $mode)
+	{
+		$handle = @fopen($file, 'cb+'); // @ is escalated to exception
+		if (!$handle) {
+			throw new \RuntimeException("Unable to create file '$file'. " . error_get_last()['message']);
+		} elseif (!@flock($handle, $mode)) { // @ is escalated to exception
+			throw new \RuntimeException('Unable to acquire ' . ($mode & LOCK_EX ? 'exclusive' : 'shared') . " lock on file '$file'. " . error_get_last()['message']);
+		}
+		return $handle;
 	}
 
 
