@@ -411,8 +411,9 @@ class RobotLoader
 	private function loadCache(): void
 	{
 		$file = $this->getCacheFile();
-		[$this->classes, $this->missing] = @include $file; // @ file may not exist
-		if (is_array($this->classes)) {
+		$data = @include $file; // @ file may not exist
+		if (is_array($data)) {
+			[$this->classes, $this->missing] = $data;
 			return;
 		}
 
@@ -421,8 +422,10 @@ class RobotLoader
 			throw new \RuntimeException("Unable to create or acquire exclusive lock on file '$file.lock'.");
 		}
 
-		[$this->classes, $this->missing] = @include $file; // @ file may not exist
-		if (!is_array($this->classes)) {
+		$data = @include $file; // @ file may not exist
+		if (is_array($data)) {
+			[$this->classes, $this->missing] = $data;
+		} else {
 			$this->rebuild();
 		}
 
