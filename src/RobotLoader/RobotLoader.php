@@ -411,37 +411,55 @@ class RobotLoader
 	private function loadCache(): void
 	{
 		$file = $this->getCacheFile();
+
+		// Solving atomicity to work everywhere is really pain in the ass.
+		// 1) We want to do as little as possible IO calls on production and also directory and file can be not writable (#19)
+		// so on Linux we include the file directly without shared lock, therefore, the file must be created atomically by renaming.
+		// 2) On Windows file cannot be renamed-to while is open (ie by include() #11), so we have to acquire a lock.
+		$lock = defined('PHP_WINDOWS_VERSION_BUILD')
+			? $this->acquireLock("$file.lock", LOCK_SH)
+			: null;
+
 		$data = @include $file; // @ file may not exist
 		if (is_array($data)) {
 			[$this->classes, $this->missing] = $data;
 			return;
 		}
 
+		if ($lock) {
+			flock($lock, LOCK_UN); // release shared lock so we can get exclusive
+		}
 		$lock = $this->acquireLock("$file.lock", LOCK_EX);
 
+		// while waiting for exclusive lock, someone might have already created the cache
 		$data = @include $file; // @ file may not exist
 		if (is_array($data)) {
 			[$this->classes, $this->missing] = $data;
-		} else {
-			$this->rebuild();
+			return;
 		}
 
-		flock($lock, LOCK_UN);
-		fclose($lock);
-		@unlink("$file.lock"); // @ file may become locked on Windows
+		$this->classes = $this->missing = [];
+		$this->refreshClasses();
+		$this->saveCache($lock);
+		// On Windows concurrent creation and deletion of a file can cause a error 'permission denied',
+		// therefore, we will not delete the lock file. Windows is peace of shit.
 	}
 
 
 	/**
 	 * Writes class list to cache.
 	 */
-	private function saveCache(): void
+	private function saveCache($lock = null): void
 	{
+		// we have to acquire a lock to be able safely rename file
+		// on Linux: that another thread does not rename the same named file earlier
+		// on Windows: that the file is not read by another thread
 		$file = $this->getCacheFile();
-		$tempFile = $file . uniqid('', true) . '.tmp';
+		$lock = $lock ?: $this->acquireLock("$file.lock", LOCK_EX);
 		$code = "<?php\nreturn " . var_export([$this->classes, $this->missing], true) . ";\n";
-		if (file_put_contents($tempFile, $code) !== strlen($code) || !rename($tempFile, $file)) {
-			@unlink($tempFile); // @ - file may not exist
+
+		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
+			@unlink("$file.tmp"); // @ file may not exist
 			throw new \RuntimeException("Unable to create '$file'.");
 		}
 		if (function_exists('opcache_invalidate')) {
@@ -452,7 +470,7 @@ class RobotLoader
 
 	private function acquireLock(string $file, int $mode)
 	{
-		$handle = @fopen($file, 'cb+'); // @ is escalated to exception
+		$handle = @fopen($file, 'w'); // @ is escalated to exception
 		if (!$handle) {
 			throw new \RuntimeException("Unable to create file '$file'. " . error_get_last()['message']);
 		} elseif (!@flock($handle, $mode)) { // @ is escalated to exception
