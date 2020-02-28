@@ -411,6 +411,7 @@ class RobotLoader
 	private function loadCache(): void
 	{
 		$file = $this->getCacheFile();
+		$lock = false;
 
 		// Solving atomicity to work everywhere is really pain in the ass.
 		// 1) We want to do as little as possible IO calls on production and also directory and file can be not writable (#19)
