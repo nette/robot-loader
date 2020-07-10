@@ -21,7 +21,8 @@ file_put_contents($dir . '/file2.php', '<?php class B {}');
 $loader = new RobotLoader;
 $loader->setTempDirectory(getTempDir());
 $loader->addDirectory($dir);
-$loader->register(); // rebuilds cache
+$loader->register();
+class_exists('x'); // rebuilds cache
 
 rename($dir . '/file1.php', $dir . '/file3.php');
 

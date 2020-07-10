@@ -52,6 +52,9 @@ class RobotLoader
 	private $classes = [];
 
 	/** @var bool */
+	private $cacheLoaded = false;
+
+	/** @var bool */
 	private $refreshed = false;
 
 	/** @var array of missing classes */
@@ -74,7 +77,6 @@ class RobotLoader
 	 */
 	public function register(bool $prepend = false): self
 	{
-		$this->loadCache();
 		spl_autoload_register([$this, 'tryLoad'], true, $prepend);
 		return $this;
 	}
@@ -85,6 +87,7 @@ class RobotLoader
 	 */
 	public function tryLoad(string $type): void
 	{
+		$this->loadCache();
 		$type = ltrim($type, '\\'); // PHP namespace bug #49143
 		$info = $this->classes[$type] ?? null;
 
@@ -158,6 +161,7 @@ class RobotLoader
 	 */
 	public function getIndexedClasses(): array
 	{
+		$this->loadCache();
 		$res = [];
 		foreach ($this->classes as $class => $info) {
 			$res[$class] = $info['file'];
@@ -171,6 +175,7 @@ class RobotLoader
 	 */
 	public function rebuild(): void
 	{
+		$this->cacheLoaded = true;
 		$this->classes = $this->missing = [];
 		$this->refreshClasses();
 		if ($this->tempDirectory) {
@@ -410,6 +415,11 @@ class RobotLoader
 	 */
 	private function loadCache(): void
 	{
+		if ($this->cacheLoaded) {
+			return;
+		}
+		$this->cacheLoaded = true;
+
 		$file = $this->getCacheFile();
 
 		// Solving atomicity to work everywhere is really pain in the ass.
