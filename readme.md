@@ -48,7 +48,7 @@ The recommended way to install is via Composer:
 composer require nette/robot-loader
 ```
 
-It requires PHP version 5.6 and supports PHP up to 7.4.
+It requires PHP version 5.6 and supports PHP up to 8.0.
 
 
 Usage
