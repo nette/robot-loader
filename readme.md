@@ -2,7 +2,7 @@ RobotLoader: comfortable autoloading
 ====================================
 
 [![Downloads this Month](https://img.shields.io/packagist/dm/nette/robot-loader.svg)](https://packagist.org/packages/nette/robot-loader)
-[![Build Status](https://travis-ci.org/nette/robot-loader.svg?branch=master)](https://travis-ci.org/nette/robot-loader)
+[![Tests](https://github.com/nette/robot-loader/workflows/Tests/badge.svg?branch=master)](https://github.com/nette/robot-loader/actions)
 [![Coverage Status](https://coveralls.io/repos/github/nette/robot-loader/badge.svg?branch=master)](https://coveralls.io/github/nette/robot-loader?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/nette/robot-loader/v/stable)](https://github.com/nette/robot-loader/releases)
 [![License](https://img.shields.io/badge/license-New%20BSD-blue.svg)](https://github.com/nette/robot-loader/blob/master/license.md)
