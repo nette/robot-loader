@@ -211,14 +211,14 @@ class RobotLoader
 
 		$this->classes = [];
 		foreach ($this->scanPaths as $path) {
-			$iterator = is_file($path) ? [new SplFileInfo($path)] : $this->createFileIterator($path);
+			$iterator = is_file($path)
+				? [new SplFileInfo($path)]
+				: $this->createFileIterator($path);
 			foreach ($iterator as $file) {
 				$file = $file->getPathname();
-				if (isset($files[$file]) && $files[$file]['time'] == filemtime($file)) {
-					$classes = $files[$file]['classes'];
-				} else {
-					$classes = $this->scanPhp($file);
-				}
+				$classes = isset($files[$file]) && $files[$file]['time'] == filemtime($file)
+					? $files[$file]['classes']
+					: $this->scanPhp($file);
 				$files[$file] = ['classes' => [], 'time' => filemtime($file)];
 
 				foreach ($classes as $class) {
@@ -245,7 +245,7 @@ class RobotLoader
 		}
 
 		if (is_string($ignoreDirs = $this->ignoreDirs)) {
-			trigger_error(__CLASS__ . ': $ignoreDirs must be an array.', E_USER_WARNING);
+			trigger_error(self::class . ': $ignoreDirs must be an array.', E_USER_WARNING);
 			$ignoreDirs = preg_split('#[,\s]+#', $ignoreDirs);
 		}
 		$disallow = [];
@@ -256,7 +256,7 @@ class RobotLoader
 		}
 
 		if (is_string($acceptFiles = $this->acceptFiles)) {
-			trigger_error(__CLASS__ . ': $acceptFiles must be an array.', E_USER_WARNING);
+			trigger_error(self::class . ': $acceptFiles must be an array.', E_USER_WARNING);
 			$acceptFiles = preg_split('#[,\s]+#', $acceptFiles);
 		}
 
@@ -344,7 +344,9 @@ class RobotLoader
 						continue 2;
 
 					case T_STRING:
-					case PHP_VERSION_ID < 80000 ? T_NS_SEPARATOR : T_NAME_QUALIFIED:
+					case PHP_VERSION_ID < 80000
+						? T_NS_SEPARATOR
+						: T_NAME_QUALIFIED:
 						if ($expected) {
 							$name .= $token[1];
 						}
