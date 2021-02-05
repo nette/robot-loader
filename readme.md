@@ -28,6 +28,16 @@ require_once 'Utils/Paginator.php';
 ...
 ```
 
+[Support Me](https://github.com/sponsors/dg)
+--------------------------------------------
+
+Do you like RobotLoader? Are you looking forward to the new features?
+
+[![Buy me a coffee](https://files.nette.org/icons/donation-3.svg)](https://github.com/sponsors/dg)
+
+Thank you!
+
+
 Installation
 ------------
 
