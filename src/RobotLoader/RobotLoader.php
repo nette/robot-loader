@@ -386,6 +386,9 @@ class RobotLoader
 					case T_CLASS:
 					case T_INTERFACE:
 					case T_TRAIT:
+					case PHP_VERSION_ID < 80100
+						? T_CLASS
+						: T_ENUM:
 						$expected = $token[0];
 						$name = '';
 						continue 2;
@@ -396,20 +399,13 @@ class RobotLoader
 			}
 
 			if ($expected) {
-				switch ($expected) {
-					case T_CLASS:
-					case T_INTERFACE:
-					case T_TRAIT:
-						if ($name && $level === $minLevel) {
-							$classes[] = $namespace . $name;
-						}
-						break;
+				if ($expected === T_NAMESPACE) {
+					$namespace = $name ? $name . '\\' : '';
+					$minLevel = $token === '{' ? 1 : 0;
 
-					case T_NAMESPACE:
-						$namespace = $name ? $name . '\\' : '';
-						$minLevel = $token === '{' ? 1 : 0;
+				} elseif ($name && $level === $minLevel) {
+					$classes[] = $namespace . $name;
 				}
-
 				$expected = null;
 			}
 
