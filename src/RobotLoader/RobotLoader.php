@@ -396,9 +396,7 @@ class RobotLoader
 						continue 2;
 
 					case T_STRING:
-					case PHP_VERSION_ID < 80000
-						? T_NS_SEPARATOR
-						: T_NAME_QUALIFIED:
+					case T_NAME_QUALIFIED:
 						if ($expected) {
 							$name .= $token[1];
 						}
