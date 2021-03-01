@@ -259,7 +259,7 @@ class RobotLoader
 							'Ambiguous class %s resolution; defined in %s and in %s.',
 							$class,
 							$this->classes[$class][0],
-							$file
+							$file,
 						));
 					}
 
@@ -353,7 +353,7 @@ class RobotLoader
 					'Ambiguous class %s resolution; defined in %s and in %s.',
 					$class,
 					$prevFile,
-					$file
+					$file,
 				));
 			}
 
@@ -415,6 +415,7 @@ class RobotLoader
 						$expected = $token[0];
 						$name = '';
 						continue 2;
+
 					case T_CURLY_OPEN:
 					case T_DOLLAR_OPEN_CURLY_BRACES:
 						$level++;
@@ -551,7 +552,7 @@ class RobotLoader
 				"Unable to acquire %s lock on file '%s'. %s",
 				$mode & LOCK_EX ? 'exclusive' : 'shared',
 				$file,
-				error_get_last()['message']
+				error_get_last()['message'],
 			));
 		}
 
