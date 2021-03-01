@@ -77,7 +77,7 @@ class RobotLoader
 	/**
 	 * Register autoloader.
 	 */
-	public function register(bool $prepend = false): self
+	public function register(bool $prepend = false): static
 	{
 		spl_autoload_register([$this, 'tryLoad'], true, $prepend);
 		return $this;
@@ -128,16 +128,15 @@ class RobotLoader
 
 	/**
 	 * Add path or paths to list.
-	 * @param  string  ...$paths  absolute path
 	 */
-	public function addDirectory(...$paths): self
+	public function addDirectory(string ...$paths): static
 	{
 		$this->scanPaths = array_merge($this->scanPaths, $paths);
 		return $this;
 	}
 
 
-	public function reportParseErrors(bool $on = true): self
+	public function reportParseErrors(bool $on = true): static
 	{
 		$this->reportParseErrors = $on;
 		return $this;
@@ -146,9 +145,8 @@ class RobotLoader
 
 	/**
 	 * Excludes path or paths from list.
-	 * @param  string  ...$paths  absolute path
 	 */
-	public function excludeDirectory(...$paths): self
+	public function excludeDirectory(string ...$paths): static
 	{
 		$this->excludeDirs = array_merge($this->excludeDirs, $paths);
 		return $this;
@@ -418,7 +416,7 @@ class RobotLoader
 	/**
 	 * Sets auto-refresh mode.
 	 */
-	public function setAutoRefresh(bool $on = true): self
+	public function setAutoRefresh(bool $on = true): static
 	{
 		$this->autoRebuild = $on;
 		return $this;
@@ -428,7 +426,7 @@ class RobotLoader
 	/**
 	 * Sets path to temporary directory.
 	 */
-	public function setTempDirectory(string $dir): self
+	public function setTempDirectory(string $dir): static
 	{
 		Nette\Utils\FileSystem::createDir($dir);
 		$this->tempDirectory = $dir;
