@@ -18,11 +18,11 @@ $loader->setTempDirectory(getTempDir());
 Assert::noError(
 	function () use ($loader) {
 		$loader->addDirectory(...[]);
-	}
+	},
 );
 
 Assert::noError(
 	function () use ($loader) {
 		$loader->excludeDirectory(...[]);
-	}
+	},
 );
