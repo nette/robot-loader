@@ -84,8 +84,6 @@ class RobotLoader
 	 */
 	public function tryLoad($type)
 	{
-		$type = ltrim($type, '\\'); // PHP namespace bug #49143
-
 		if (isset($this->missing[$type]) && $this->missing[$type] >= self::RETRY_LIMIT) {
 			return;
 		}
