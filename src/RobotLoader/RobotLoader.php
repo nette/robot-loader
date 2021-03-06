@@ -85,28 +85,40 @@ class RobotLoader
 	public function tryLoad($type)
 	{
 		$type = ltrim($type, '\\'); // PHP namespace bug #49143
+
+		if (isset($this->missing[$type]) && $this->missing[$type] >= self::RETRY_LIMIT) {
+			return;
+		}
+
 		$info = isset($this->classes[$type]) ? $this->classes[$type] : null;
 
 		if ($this->autoRebuild) {
-			if (!$info || !is_file($info['file'])) {
-				$missing = &$this->missing[$type];
-				$missing++;
-				if (!$this->refreshed && $missing <= self::RETRY_LIMIT) {
+			$save = false;
+
+			if (!$this->refreshed) {
+				if (!$info || !is_file($info['file'])) {
 					$this->refresh();
-					$this->saveCache();
-				} elseif ($info) {
-					unset($this->classes[$type]);
-					$this->saveCache();
+					$save = true;
+
+				} elseif (filemtime($info['file']) !== $info['time']) {
+					$this->updateFile($info['file']);
+					$save = true;
 				}
 
-			} elseif (!$this->refreshed && filemtime($info['file']) !== $info['time']) {
-				$this->updateFile($info['file']);
-				if (empty($this->classes[$type])) {
-					$this->missing[$type] = 0;
-				}
+				$info = isset($this->classes[$type]) ? $this->classes[$type] : null;
+			}
+
+			if (!$info || !is_file($info['file'])) {
+				$missing = & $this->missing[$type];
+				$missing++;
+				$save = $save || $info || ($missing <= self::RETRY_LIMIT);
+				unset($this->classes[$type]);
+				$info = null;
+			}
+
+			if ($save) {
 				$this->saveCache();
 			}
-			$info = isset($this->classes[$type]) ? $this->classes[$type] : null;
 		}
 
 		if ($info) {
