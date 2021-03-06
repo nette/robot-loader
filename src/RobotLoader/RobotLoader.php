@@ -88,7 +88,6 @@ class RobotLoader
 	public function tryLoad(string $type): void
 	{
 		$this->loadCache();
-		$type = ltrim($type, '\\'); // PHP namespace bug #49143
 		$info = $this->classes[$type] ?? null;
 
 		if ($this->autoRebuild) {
