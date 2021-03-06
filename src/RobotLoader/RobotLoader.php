@@ -66,11 +66,22 @@ class RobotLoader
 	/** @var string|null */
 	private $tempDirectory;
 
+	/** @var bool */
+	private $needSave = false;
+
 
 	public function __construct()
 	{
 		if (!extension_loaded('tokenizer')) {
 			throw new Nette\NotSupportedException('PHP extension Tokenizer is not loaded.');
+		}
+	}
+
+
+	public function __destruct()
+	{
+		if ($this->needSave) {
+			$this->saveCache();
 		}
 	}
 
@@ -100,30 +111,24 @@ class RobotLoader
 		[$file, $mtime] = $this->classes[$type] ?? null;
 
 		if ($this->autoRebuild) {
-			$save = false;
-
 			if (!$this->refreshed) {
 				if (!$file || !is_file($file)) {
 					$this->refreshClasses();
 					[$file] = $this->classes[$type] ?? null;
-					$save = true;
+					$this->needSave = true;
 
 				} elseif (filemtime($file) !== $mtime) {
 					$this->updateFile($file);
 					[$file] = $this->classes[$type] ?? null;
-					$save = true;
+					$this->needSave = true;
 				}
 			}
 
 			if (!$file || !is_file($file)) {
 				$this->missingClasses[$type] = ++$missing;
-				$save = $save || $file || ($missing <= self::RETRY_LIMIT);
+				$this->needSave = $this->needSave || $file || ($missing <= self::RETRY_LIMIT);
 				unset($this->classes[$type]);
 				$file = null;
-			}
-
-			if ($save) {
-				$this->saveCache();
 			}
 		}
 
