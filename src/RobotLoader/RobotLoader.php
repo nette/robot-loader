@@ -88,28 +88,40 @@ class RobotLoader
 	public function tryLoad(string $type): void
 	{
 		$this->loadCache();
+
+		$missing = $this->missing[$type] ?? null;
+		if ($missing >= self::RETRY_LIMIT) {
+			return;
+		}
+
 		$info = $this->classes[$type] ?? null;
 
 		if ($this->autoRebuild) {
-			if (!$info || !is_file($info['file'])) {
-				$missing = &$this->missing[$type];
-				$missing++;
-				if (!$this->refreshed && $missing <= self::RETRY_LIMIT) {
-					$this->refreshClasses();
-					$this->saveCache();
-				} elseif ($info) {
-					unset($this->classes[$type]);
-					$this->saveCache();
-				}
+			$save = false;
 
-			} elseif (!$this->refreshed && filemtime($info['file']) !== $info['time']) {
-				$this->updateFile($info['file']);
-				if (empty($this->classes[$type])) {
-					$this->missing[$type] = 0;
+			if (!$this->refreshed) {
+				if (!$info || !is_file($info['file'])) {
+					$this->refreshClasses();
+					$info = $this->classes[$type] ?? null;
+					$save = true;
+
+				} elseif (filemtime($info['file']) !== $info['time']) {
+					$this->updateFile($info['file']);
+					$info = $this->classes[$type] ?? null;
+					$save = true;
 				}
+			}
+
+			if (!$info || !is_file($info['file'])) {
+				$this->missing[$type] = ++$missing;
+				$save = $save || $info || ($missing <= self::RETRY_LIMIT);
+				unset($this->classes[$type]);
+				$info = null;
+			}
+
+			if ($save) {
 				$this->saveCache();
 			}
-			$info = $this->classes[$type] ?? null;
 		}
 
 		if ($info) {
