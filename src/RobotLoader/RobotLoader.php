@@ -48,7 +48,7 @@ class RobotLoader
 	/** @var string[] */
 	private $excludeDirs = [];
 
-	/** @var array of class => [file, time] */
+	/** @var array<string, array{string, int}>  class => [file, time] */
 	private $classes = [];
 
 	/** @var bool */
@@ -57,10 +57,10 @@ class RobotLoader
 	/** @var bool */
 	private $refreshed = false;
 
-	/** @var array of class => counter */
+	/** @var array<string, int>  class => counter */
 	private $missingClasses = [];
 
-	/** @var array of file => mtime */
+	/** @var array<string, int>  file => mtime */
 	private $emptyFiles = [];
 
 	/** @var string|null */
@@ -176,7 +176,7 @@ class RobotLoader
 
 
 	/**
-	 * @return array of class => filename
+	 * @return array<string, string>  class => filename
 	 */
 	public function getIndexedClasses(): array
 	{
@@ -495,6 +495,7 @@ class RobotLoader
 
 	/**
 	 * Writes class list to cache.
+	 * @param  resource  $lock
 	 */
 	private function saveCache($lock = null): void
 	{
@@ -515,6 +516,7 @@ class RobotLoader
 	}
 
 
+	/** @return resource */
 	private function acquireLock(string $file, int $mode)
 	{
 		$handle = @fopen($file, 'w'); // @ is escalated to exception
