@@ -310,9 +310,9 @@ class RobotLoader
 			}
 		}
 
-		$classes = is_file($file) ? $this->scanPhp($file) : [];
+		$foundClasses = is_file($file) ? $this->scanPhp($file) : [];
 
-		foreach ($classes as $class) {
+		foreach ($foundClasses as $class) {
 			[$prevFile, $prevMtime] = $this->classes[$class] ?? null;
 
 			if (isset($prevFile) && @filemtime($prevFile) !== $prevMtime) { // @ file may not exists
