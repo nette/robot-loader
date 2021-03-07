@@ -226,19 +226,20 @@ class RobotLoader
 				? [new SplFileInfo($path)]
 				: $this->createFileIterator($path);
 
-			foreach ($iterator as $file) {
-				$file = $file->getPathname();
-				$classes = isset($files[$file]) && $files[$file]['time'] == filemtime($file)
+			foreach ($iterator as $fileInfo) {
+				$mtime = $fileInfo->getMTime();
+				$file = $fileInfo->getPathname();
+				$classes = isset($files[$file]) && $files[$file]['time'] == $mtime
 					? $files[$file]['classes']
 					: $this->scanPhp($file);
 
-				$files[$file] = ['classes' => [], 'time' => filemtime($file)];
+				$files[$file] = ['classes' => [], 'time' => $mtime];
 
 				foreach ($classes as $class) {
 					if (isset($this->classes[$class])) {
 						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$this->classes[$class][0]} and in $file.");
 					}
-					$this->classes[$class] = [$file, filemtime($file)];
+					$this->classes[$class] = [$file, $mtime];
 					unset($this->missingClasses[$class]);
 				}
 			}
