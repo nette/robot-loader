@@ -31,43 +31,37 @@ class RobotLoader
 	private const RETRY_LIMIT = 3;
 
 	/** @var string[] */
-	public $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
+	public array $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
 
 	/** @var string[] */
-	public $acceptFiles = ['*.php'];
+	public array $acceptFiles = ['*.php'];
 
-	/** @var bool */
-	private $autoRebuild = true;
+	private bool $autoRebuild = true;
 
-	/** @var bool */
-	private $reportParseErrors = true;
+	private bool $reportParseErrors = true;
 
 	/** @var string[] */
-	private $scanPaths = [];
+	private array $scanPaths = [];
 
 	/** @var string[] */
-	private $excludeDirs = [];
+	private array $excludeDirs = [];
 
 	/** @var array<string, array{string, int}>  class => [file, time] */
-	private $classes = [];
+	private array $classes = [];
 
-	/** @var bool */
-	private $cacheLoaded = false;
+	private bool $cacheLoaded = false;
 
-	/** @var bool */
-	private $refreshed = false;
+	private bool $refreshed = false;
 
 	/** @var array<string, int>  class => counter */
-	private $missingClasses = [];
+	private array $missingClasses = [];
 
 	/** @var array<string, int>  file => mtime */
-	private $emptyFiles = [];
+	private array $emptyFiles = [];
 
-	/** @var string|null */
-	private $tempDirectory;
+	private ?string $tempDirectory = null;
 
-	/** @var bool */
-	private $needSave = false;
+	private bool $needSave = false;
 
 
 	public function __construct()
