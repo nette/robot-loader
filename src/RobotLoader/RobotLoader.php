@@ -60,6 +60,9 @@ class RobotLoader
 	/** @var array of class => counter */
 	private $missingClasses = [];
 
+	/** @var array of file => mtime */
+	private $emptyFiles = [];
+
 	/** @var string|null */
 	private $tempDirectory;
 
@@ -187,7 +190,7 @@ class RobotLoader
 	public function rebuild(): void
 	{
 		$this->cacheLoaded = true;
-		$this->classes = $this->missingClasses = [];
+		$this->classes = $this->missingClasses = $this->emptyFiles = [];
 		$this->refreshClasses();
 		if ($this->tempDirectory) {
 			$this->saveCache();
@@ -209,17 +212,18 @@ class RobotLoader
 
 
 	/**
-	 * Refreshes $classes.
+	 * Refreshes $this->classes & $this->emptyFiles.
 	 */
 	private function refreshClasses(): void
 	{
 		$this->refreshed = true; // prevents calling refreshClasses() or updateFile() in tryLoad()
-		$files = $classes = [];
+		$files = $this->emptyFiles;
+		$classes = [];
 		foreach ($this->classes as $class => [$file, $mtime]) {
 			$files[$file] = $mtime;
 			$classes[$file][] = $class;
 		}
-		$this->classes = [];
+		$this->classes = $this->emptyFiles = [];
 
 		foreach ($this->scanPaths as $path) {
 			$iterator = is_file($path)
@@ -230,8 +234,12 @@ class RobotLoader
 				$mtime = $fileInfo->getMTime();
 				$file = $fileInfo->getPathname();
 				$foundClasses = isset($files[$file]) && $files[$file] === $mtime
-					? $classes[$file]
+					? ($classes[$file] ?? [])
 					: $this->scanPhp($file);
+
+				if (!$foundClasses) {
+					$this->emptyFiles[$file] = $mtime;
+				}
 
 				$files[$file] = $mtime;
 				$classes[$file] = []; // prevents the error when adding the same file twice
@@ -456,7 +464,7 @@ class RobotLoader
 
 		$data = @include $file; // @ file may not exist
 		if (is_array($data)) {
-			[$this->classes, $this->missingClasses] = $data;
+			[$this->classes, $this->missingClasses, $this->emptyFiles] = $data;
 			return;
 		}
 
@@ -468,11 +476,11 @@ class RobotLoader
 		// while waiting for exclusive lock, someone might have already created the cache
 		$data = @include $file; // @ file may not exist
 		if (is_array($data)) {
-			[$this->classes, $this->missingClasses] = $data;
+			[$this->classes, $this->missingClasses, $this->emptyFiles] = $data;
 			return;
 		}
 
-		$this->classes = $this->missingClasses = [];
+		$this->classes = $this->missingClasses = $this->emptyFiles = [];
 		$this->refreshClasses();
 		$this->saveCache($lock);
 		// On Windows concurrent creation and deletion of a file can cause a error 'permission denied',
@@ -490,7 +498,7 @@ class RobotLoader
 		// on Windows: that the file is not read by another thread
 		$file = $this->getCacheFile();
 		$lock = $lock ?: $this->acquireLock("$file.lock", LOCK_EX);
-		$code = "<?php\nreturn " . var_export([$this->classes, $this->missingClasses], true) . ";\n";
+		$code = "<?php\nreturn " . var_export([$this->classes, $this->missingClasses, $this->emptyFiles], true) . ";\n";
 
 		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
 			@unlink("$file.tmp"); // @ file may not exist
