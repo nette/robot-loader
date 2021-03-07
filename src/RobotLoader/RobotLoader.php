@@ -94,29 +94,29 @@ class RobotLoader
 			return;
 		}
 
-		$info = $this->classes[$type] ?? null;
+		[$file, $mtime] = $this->classes[$type] ?? null;
 
 		if ($this->autoRebuild) {
 			$save = false;
 
 			if (!$this->refreshed) {
-				if (!$info || !is_file($info['file'])) {
+				if (!$file || !is_file($file)) {
 					$this->refreshClasses();
-					$info = $this->classes[$type] ?? null;
+					[$file] = $this->classes[$type] ?? null;
 					$save = true;
 
-				} elseif (filemtime($info['file']) !== $info['time']) {
-					$this->updateFile($info['file']);
-					$info = $this->classes[$type] ?? null;
+				} elseif (filemtime($file) !== $mtime) {
+					$this->updateFile($file);
+					[$file] = $this->classes[$type] ?? null;
 					$save = true;
 				}
 			}
 
-			if (!$info || !is_file($info['file'])) {
+			if (!$file || !is_file($file)) {
 				$this->missingClasses[$type] = ++$missing;
-				$save = $save || $info || ($missing <= self::RETRY_LIMIT);
+				$save = $save || $file || ($missing <= self::RETRY_LIMIT);
 				unset($this->classes[$type]);
-				$info = null;
+				$file = null;
 			}
 
 			if ($save) {
@@ -124,8 +124,8 @@ class RobotLoader
 			}
 		}
 
-		if ($info) {
-			(static function ($file) { require $file; })($info['file']);
+		if ($file) {
+			(static function ($file) { require $file; })($file);
 		}
 	}
 
@@ -174,8 +174,8 @@ class RobotLoader
 	{
 		$this->loadCache();
 		$res = [];
-		foreach ($this->classes as $class => $info) {
-			$res[$class] = $info['file'];
+		foreach ($this->classes as $class => [$file]) {
+			$res[$class] = $file;
 		}
 		return $res;
 	}
@@ -215,29 +215,30 @@ class RobotLoader
 	{
 		$this->refreshed = true; // prevents calling refreshClasses() or updateFile() in tryLoad()
 		$files = [];
-		foreach ($this->classes as $class => $info) {
-			$files[$info['file']]['time'] = $info['time'];
-			$files[$info['file']]['classes'][] = $class;
+		foreach ($this->classes as $class => [$file, $mtime]) {
+			$files[$file]['time'] = $mtime;
+			$files[$file]['classes'][] = $class;
 		}
-
 		$this->classes = [];
+
 		foreach ($this->scanPaths as $path) {
 			$iterator = is_file($path)
 				? [new SplFileInfo($path)]
 				: $this->createFileIterator($path);
+
 			foreach ($iterator as $file) {
 				$file = $file->getPathname();
 				$classes = isset($files[$file]) && $files[$file]['time'] == filemtime($file)
 					? $files[$file]['classes']
 					: $this->scanPhp($file);
+
 				$files[$file] = ['classes' => [], 'time' => filemtime($file)];
 
 				foreach ($classes as $class) {
-					$info = &$this->classes[$class];
-					if (isset($info['file'])) {
-						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
+					if (isset($this->classes[$class])) {
+						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$this->classes[$class][0]} and in $file.");
 					}
-					$info = ['file' => $file, 'time' => filemtime($file)];
+					$this->classes[$class] = [$file, filemtime($file)];
 					unset($this->missingClasses[$class]);
 				}
 			}
@@ -301,23 +302,25 @@ class RobotLoader
 
 	private function updateFile(string $file): void
 	{
-		foreach ($this->classes as $class => $info) {
-			if (isset($info['file']) && $info['file'] === $file) {
+		foreach ($this->classes as $class => [$prevFile]) {
+			if ($file === $prevFile) {
 				unset($this->classes[$class]);
 			}
 		}
 
 		$classes = is_file($file) ? $this->scanPhp($file) : [];
+
 		foreach ($classes as $class) {
-			$info = &$this->classes[$class];
-			if (isset($info['file']) && @filemtime($info['file']) !== $info['time']) { // @ file may not exists
-				$this->updateFile($info['file']);
-				$info = &$this->classes[$class];
+			[$prevFile, $prevMtime] = $this->classes[$class] ?? null;
+
+			if (isset($prevFile) && @filemtime($prevFile) !== $prevMtime) { // @ file may not exists
+				$this->updateFile($prevFile);
+				[$prevFile] = $this->classes[$class] ?? null;
 			}
-			if (isset($info['file'])) {
-				throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
+			if (isset($prevFile)) {
+				throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in $prevFile and in $file.");
 			}
-			$info = ['file' => $file, 'time' => filemtime($file)];
+			$this->classes[$class] = [$file, filemtime($file)];
 		}
 	}
 
@@ -519,6 +522,6 @@ class RobotLoader
 
 	protected function getCacheKey(): array
 	{
-		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths, $this->excludeDirs];
+		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths, $this->excludeDirs, 'v2'];
 	}
 }
