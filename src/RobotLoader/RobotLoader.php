@@ -57,8 +57,8 @@ class RobotLoader
 	/** @var bool */
 	private $refreshed = false;
 
-	/** @var array of missing classes */
-	private $missing = [];
+	/** @var array of class => counter */
+	private $missingClasses = [];
 
 	/** @var string|null */
 	private $tempDirectory;
@@ -89,7 +89,7 @@ class RobotLoader
 	{
 		$this->loadCache();
 
-		$missing = $this->missing[$type] ?? null;
+		$missing = $this->missingClasses[$type] ?? null;
 		if ($missing >= self::RETRY_LIMIT) {
 			return;
 		}
@@ -113,7 +113,7 @@ class RobotLoader
 			}
 
 			if (!$info || !is_file($info['file'])) {
-				$this->missing[$type] = ++$missing;
+				$this->missingClasses[$type] = ++$missing;
 				$save = $save || $info || ($missing <= self::RETRY_LIMIT);
 				unset($this->classes[$type]);
 				$info = null;
@@ -187,7 +187,7 @@ class RobotLoader
 	public function rebuild(): void
 	{
 		$this->cacheLoaded = true;
-		$this->classes = $this->missing = [];
+		$this->classes = $this->missingClasses = [];
 		$this->refreshClasses();
 		if ($this->tempDirectory) {
 			$this->saveCache();
@@ -238,7 +238,7 @@ class RobotLoader
 						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$info['file']} and in $file.");
 					}
 					$info = ['file' => $file, 'time' => filemtime($file)];
-					unset($this->missing[$class]);
+					unset($this->missingClasses[$class]);
 				}
 			}
 		}
@@ -450,7 +450,7 @@ class RobotLoader
 
 		$data = @include $file; // @ file may not exist
 		if (is_array($data)) {
-			[$this->classes, $this->missing] = $data;
+			[$this->classes, $this->missingClasses] = $data;
 			return;
 		}
 
@@ -462,11 +462,11 @@ class RobotLoader
 		// while waiting for exclusive lock, someone might have already created the cache
 		$data = @include $file; // @ file may not exist
 		if (is_array($data)) {
-			[$this->classes, $this->missing] = $data;
+			[$this->classes, $this->missingClasses] = $data;
 			return;
 		}
 
-		$this->classes = $this->missing = [];
+		$this->classes = $this->missingClasses = [];
 		$this->refreshClasses();
 		$this->saveCache($lock);
 		// On Windows concurrent creation and deletion of a file can cause a error 'permission denied',
@@ -484,7 +484,7 @@ class RobotLoader
 		// on Windows: that the file is not read by another thread
 		$file = $this->getCacheFile();
 		$lock = $lock ?: $this->acquireLock("$file.lock", LOCK_EX);
-		$code = "<?php\nreturn " . var_export([$this->classes, $this->missing], true) . ";\n";
+		$code = "<?php\nreturn " . var_export([$this->classes, $this->missingClasses], true) . ";\n";
 
 		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
 			@unlink("$file.tmp"); // @ file may not exist
