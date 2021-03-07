@@ -257,6 +257,7 @@ class RobotLoader
 		if (!is_dir($dir)) {
 			throw new Nette\IOException("File or directory '$dir' not found.");
 		}
+		$dir = realpath($dir) ?: $dir; // realpath does not work in phar
 
 		if (is_string($ignoreDirs = $this->ignoreDirs)) {
 			trigger_error(self::class . ': $ignoreDirs must be an array.', E_USER_WARNING);

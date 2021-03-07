@@ -13,7 +13,7 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 
-$dir = getTempDir() . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR;
+$dir = realpath(getTempDir()) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR;
 mkdir($dir);
 
 $loader = new RobotLoader;
