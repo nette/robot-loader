@@ -248,7 +248,7 @@ class RobotLoader
 
 
 	/**
-	 * Creates an iterator scaning directory for PHP files, subdirectories and 'netterobots.txt' files.
+	 * Creates an iterator scaning directory for PHP files and subdirectories.
 	 * @throws Nette\IOException if path is not found
 	 */
 	private function createFileIterator(string $dir): Nette\Utils\Finder
@@ -267,33 +267,15 @@ class RobotLoader
 			}
 		}
 
-		$iterator = Nette\Utils\Finder::findFiles(...$this->acceptFiles)
-			->filter(function (SplFileInfo $file) use (&$disallow) {
+		return Nette\Utils\Finder::findFiles(...$this->acceptFiles)
+			->filter($filter = function (SplFileInfo $file) use ($disallow) {
 				return $file->getRealPath() === false
 					? true
 					: !isset($disallow[str_replace('\\', '/', $file->getRealPath())]);
 			})
 			->from($dir)
 			->exclude(...$this->ignoreDirs)
-			->filter($filter = function (SplFileInfo $dir) use (&$disallow) {
-				if ($dir->getRealPath() === false) {
-					return true;
-				}
-
-				$path = str_replace('\\', '/', $dir->getRealPath());
-				if (is_file("$path/netterobots.txt")) {
-					foreach (file("$path/netterobots.txt") as $s) {
-						if (preg_match('#^(?:disallow\\s*:)?\\s*(\\S+)#i', $s, $matches)) {
-							$disallow[$path . rtrim('/' . ltrim($matches[1], '/'), '/')] = true;
-						}
-					}
-				}
-
-				return !isset($disallow[$path]);
-			});
-
-		$filter(new SplFileInfo($dir));
-		return $iterator;
+			->filter($filter);
 	}
 
 
