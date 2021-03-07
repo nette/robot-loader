@@ -214,10 +214,10 @@ class RobotLoader
 	private function refreshClasses(): void
 	{
 		$this->refreshed = true; // prevents calling refreshClasses() or updateFile() in tryLoad()
-		$files = [];
+		$files = $classes = [];
 		foreach ($this->classes as $class => [$file, $mtime]) {
-			$files[$file]['time'] = $mtime;
-			$files[$file]['classes'][] = $class;
+			$files[$file] = $mtime;
+			$classes[$file][] = $class;
 		}
 		$this->classes = [];
 
@@ -229,13 +229,14 @@ class RobotLoader
 			foreach ($iterator as $fileInfo) {
 				$mtime = $fileInfo->getMTime();
 				$file = $fileInfo->getPathname();
-				$classes = isset($files[$file]) && $files[$file]['time'] == $mtime
-					? $files[$file]['classes']
+				$foundClasses = isset($files[$file]) && $files[$file] === $mtime
+					? $classes[$file]
 					: $this->scanPhp($file);
 
-				$files[$file] = ['classes' => [], 'time' => $mtime];
+				$files[$file] = $mtime;
+				$classes[$file] = []; // prevents the error when adding the same file twice
 
-				foreach ($classes as $class) {
+				foreach ($foundClasses as $class) {
 					if (isset($this->classes[$class])) {
 						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$this->classes[$class][0]} and in $file.");
 					}
