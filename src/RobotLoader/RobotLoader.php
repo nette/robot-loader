@@ -256,28 +256,21 @@ class RobotLoader
 		}
 		$dir = realpath($dir) ?: $dir; // realpath does not work in phar
 
+		$normalizer = fn($path) => str_replace('\\', '/', $path);
 		$disallow = [];
 		foreach (array_merge($this->ignoreDirs, $this->excludeDirs) as $item) {
 			if ($item = realpath($item)) {
-				$disallow[str_replace('\\', '/', $item)] = true;
+				$disallow[$normalizer($item)] = true;
 			}
 		}
+		$filter = fn(SplFileInfo $file) => $file->getRealPath() === false
+			|| !isset($disallow[$normalizer($file->getRealPath())]);
 
 		$iterator = Nette\Utils\Finder::findFiles($this->acceptFiles)
-			->filter(function (SplFileInfo $file) use (&$disallow) {
-				return $file->getRealPath() === false
-					? true
-					: !isset($disallow[str_replace('\\', '/', $file->getRealPath())]);
-			})
+			->filter($filter)
 			->from($dir)
 			->exclude($this->ignoreDirs)
-			->filter($filter = function (SplFileInfo $dir) use ($disallow) {
-				if ($dir->getRealPath() === false) {
-					return true;
-				}
-				$path = str_replace('\\', '/', $dir->getRealPath());
-				return !isset($disallow[$path]);
-			});
+			->filter($filter);
 
 		$filter(new SplFileInfo($dir));
 		return $iterator;
