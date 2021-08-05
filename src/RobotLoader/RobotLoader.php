@@ -488,8 +488,8 @@ class RobotLoader
 		$this->classes = $this->missingClasses = $this->emptyFiles = [];
 		$this->refreshClasses();
 		$this->saveCache($lock);
-		// On Windows concurrent creation and deletion of a file can cause a error 'permission denied',
-		// therefore, we will not delete the lock file. Windows is peace of shit.
+		// On Windows concurrent creation and deletion of a file can cause a 'permission denied' error,
+		// therefore, we will not delete the lock file. Windows is a piece of shit.
 	}
 
 
