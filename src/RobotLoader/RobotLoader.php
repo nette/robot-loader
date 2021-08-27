@@ -315,7 +315,7 @@ class RobotLoader
 		$classes = [];
 
 		try {
-			$tokens = token_get_all($code, TOKEN_PARSE);
+			$tokens = \PhpToken::tokenize($code, TOKEN_PARSE);
 		} catch (\ParseError $e) {
 			if ($this->reportParseErrors) {
 				$rp = new \ReflectionProperty($e, 'file');
@@ -327,40 +327,38 @@ class RobotLoader
 		}
 
 		foreach ($tokens as $token) {
-			if (is_array($token)) {
-				switch ($token[0]) {
-					case T_COMMENT:
-					case T_DOC_COMMENT:
-					case T_WHITESPACE:
-						continue 2;
+			switch ($token->id) {
+				case T_COMMENT:
+				case T_DOC_COMMENT:
+				case T_WHITESPACE:
+					continue 2;
 
-					case T_STRING:
-					case T_NAME_QUALIFIED:
-						if ($expected) {
-							$name .= $token[1];
-						}
-						continue 2;
+				case T_STRING:
+				case T_NAME_QUALIFIED:
+					if ($expected) {
+						$name .= $token->text;
+					}
+					continue 2;
 
-					case T_NAMESPACE:
-					case T_CLASS:
-					case T_INTERFACE:
-					case T_TRAIT:
-					case PHP_VERSION_ID < 80100
-						? T_CLASS
-						: T_ENUM:
-						$expected = $token[0];
-						$name = '';
-						continue 2;
-					case T_CURLY_OPEN:
-					case T_DOLLAR_OPEN_CURLY_BRACES:
-						$level++;
-				}
+				case T_NAMESPACE:
+				case T_CLASS:
+				case T_INTERFACE:
+				case T_TRAIT:
+				case PHP_VERSION_ID < 80100
+					? T_CLASS
+					: T_ENUM:
+					$expected = $token->id;
+					$name = '';
+					continue 2;
+				case T_CURLY_OPEN:
+				case T_DOLLAR_OPEN_CURLY_BRACES:
+					$level++;
 			}
 
 			if ($expected) {
 				if ($expected === T_NAMESPACE) {
 					$namespace = $name ? $name . '\\' : '';
-					$minLevel = $token === '{' ? 1 : 0;
+					$minLevel = $token->text === '{' ? 1 : 0;
 
 				} elseif ($name && $level === $minLevel) {
 					$classes[] = $namespace . $name;
@@ -368,9 +366,9 @@ class RobotLoader
 				$expected = null;
 			}
 
-			if ($token === '{') {
+			if ($token->text === '{') {
 				$level++;
-			} elseif ($token === '}') {
+			} elseif ($token->text === '}') {
 				$level--;
 			}
 		}
