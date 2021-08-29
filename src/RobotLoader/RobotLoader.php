@@ -255,7 +255,12 @@ class RobotLoader
 
 				foreach ($foundClasses as $class) {
 					if (isset($this->classes[$class])) {
-						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$this->classes[$class][0]} and in $file.");
+						throw new Nette\InvalidStateException(sprintf(
+							'Ambiguous class %s resolution; defined in %s and in %s.',
+							$class,
+							$this->classes[$class][0],
+							$file
+						));
 					}
 
 					$this->classes[$class] = [$file, $mtime];
@@ -273,7 +278,7 @@ class RobotLoader
 	private function createFileIterator(string $dir): Nette\Utils\Finder
 	{
 		if (!is_dir($dir)) {
-			throw new Nette\IOException("File or directory '$dir' not found.");
+			throw new Nette\IOException(sprintf("File or directory '%s' not found.", $dir));
 		}
 
 		$dir = realpath($dir) ?: $dir; // realpath does not work in phar
@@ -344,7 +349,12 @@ class RobotLoader
 			}
 
 			if (isset($prevFile)) {
-				throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in $prevFile and in $file.");
+				throw new Nette\InvalidStateException(sprintf(
+					'Ambiguous class %s resolution; defined in %s and in %s.',
+					$class,
+					$prevFile,
+					$file
+				));
 			}
 
 			$this->classes[$class] = [$file, filemtime($file)];
@@ -521,7 +531,7 @@ class RobotLoader
 
 		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
 			@unlink("$file.tmp"); // @ file may not exist
-			throw new \RuntimeException("Unable to create '$file'.");
+			throw new \RuntimeException(sprintf("Unable to create '%s'.", $file));
 		}
 
 		if (function_exists('opcache_invalidate')) {
@@ -535,9 +545,14 @@ class RobotLoader
 	{
 		$handle = @fopen($file, 'w'); // @ is escalated to exception
 		if (!$handle) {
-			throw new \RuntimeException("Unable to create file '$file'. " . error_get_last()['message']);
+			throw new \RuntimeException(sprintf("Unable to create file '%s'. %s", $file, error_get_last()['message']));
 		} elseif (!@flock($handle, $mode)) { // @ is escalated to exception
-			throw new \RuntimeException('Unable to acquire ' . ($mode & LOCK_EX ? 'exclusive' : 'shared') . " lock on file '$file'. " . error_get_last()['message']);
+			throw new \RuntimeException(sprintf(
+				"Unable to acquire %s lock on file '%s'. %s",
+				$mode & LOCK_EX ? 'exclusive' : 'shared',
+				$file,
+				error_get_last()['message']
+			));
 		}
 
 		return $handle;
