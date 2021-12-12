@@ -148,6 +148,7 @@ class RobotLoader
 			trigger_error(__METHOD__ . '() use variadics ...$paths to add an array of paths.', E_USER_WARNING);
 			$paths = $paths[0];
 		}
+
 		$this->scanPaths = array_merge($this->scanPaths, $paths);
 		return $this;
 	}
@@ -170,6 +171,7 @@ class RobotLoader
 			trigger_error(__METHOD__ . '() use variadics ...$paths to add an array of paths.', E_USER_WARNING);
 			$paths = $paths[0];
 		}
+
 		$this->excludeDirs = array_merge($this->excludeDirs, $paths);
 		return $this;
 	}
@@ -185,6 +187,7 @@ class RobotLoader
 		foreach ($this->classes as $class => [$file]) {
 			$res[$class] = $file;
 		}
+
 		return $res;
 	}
 
@@ -228,6 +231,7 @@ class RobotLoader
 			$files[$file] = $mtime;
 			$classes[$file][] = $class;
 		}
+
 		$this->classes = $this->emptyFiles = [];
 
 		foreach ($this->scanPaths as $path) {
@@ -253,6 +257,7 @@ class RobotLoader
 					if (isset($this->classes[$class])) {
 						throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in {$this->classes[$class][0]} and in $file.");
 					}
+
 					$this->classes[$class] = [$file, $mtime];
 					unset($this->missingClasses[$class]);
 				}
@@ -270,12 +275,14 @@ class RobotLoader
 		if (!is_dir($dir)) {
 			throw new Nette\IOException("File or directory '$dir' not found.");
 		}
+
 		$dir = realpath($dir) ?: $dir; // realpath does not work in phar
 
 		if (is_string($ignoreDirs = $this->ignoreDirs)) {
 			trigger_error(self::class . ': $ignoreDirs must be an array.', E_USER_WARNING);
 			$ignoreDirs = preg_split('#[,\s]+#', $ignoreDirs);
 		}
+
 		$disallow = [];
 		foreach (array_merge($ignoreDirs, $this->excludeDirs) as $item) {
 			if ($item = realpath($item)) {
@@ -300,6 +307,7 @@ class RobotLoader
 				if ($dir->getRealPath() === false) {
 					return true;
 				}
+
 				$path = str_replace('\\', '/', $dir->getRealPath());
 				if (is_file("$path/netterobots.txt")) {
 					foreach (file("$path/netterobots.txt") as $s) {
@@ -308,6 +316,7 @@ class RobotLoader
 						}
 					}
 				}
+
 				return !isset($disallow[$path]);
 			});
 
@@ -333,9 +342,11 @@ class RobotLoader
 				$this->updateFile($prevFile);
 				[$prevFile] = $this->classes[$class] ?? null;
 			}
+
 			if (isset($prevFile)) {
 				throw new Nette\InvalidStateException("Ambiguous class $class resolution; defined in $prevFile and in $file.");
 			}
+
 			$this->classes[$class] = [$file, filemtime($file)];
 		}
 	}
@@ -362,6 +373,7 @@ class RobotLoader
 				$rp->setValue($e, $file);
 				throw $e;
 			}
+
 			$tokens = [];
 		}
 
@@ -380,6 +392,7 @@ class RobotLoader
 						if ($expected) {
 							$name .= $token[1];
 						}
+
 						continue 2;
 
 					case T_NAMESPACE:
@@ -406,6 +419,7 @@ class RobotLoader
 				} elseif ($name && $level === $minLevel) {
 					$classes[] = $namespace . $name;
 				}
+
 				$expected = null;
 			}
 
@@ -415,6 +429,7 @@ class RobotLoader
 				$level--;
 			}
 		}
+
 		return $classes;
 	}
 
@@ -451,6 +466,7 @@ class RobotLoader
 		if ($this->cacheLoaded) {
 			return;
 		}
+
 		$this->cacheLoaded = true;
 
 		$file = $this->getCacheFile();
@@ -472,6 +488,7 @@ class RobotLoader
 		if ($lock) {
 			flock($lock, LOCK_UN); // release shared lock so we can get exclusive
 		}
+
 		$lock = $this->acquireLock("$file.lock", LOCK_EX);
 
 		// while waiting for exclusive lock, someone might have already created the cache
@@ -506,6 +523,7 @@ class RobotLoader
 			@unlink("$file.tmp"); // @ file may not exist
 			throw new \RuntimeException("Unable to create '$file'.");
 		}
+
 		if (function_exists('opcache_invalidate')) {
 			@opcache_invalidate($file, true); // @ can be restricted
 		}
@@ -521,6 +539,7 @@ class RobotLoader
 		} elseif (!@flock($handle, $mode)) { // @ is escalated to exception
 			throw new \RuntimeException('Unable to acquire ' . ($mode & LOCK_EX ? 'exclusive' : 'shared') . " lock on file '$file'. " . error_get_last()['message']);
 		}
+
 		return $handle;
 	}
 
@@ -530,6 +549,7 @@ class RobotLoader
 		if (!$this->tempDirectory) {
 			throw new \LogicException('Set path to temporary directory using setTempDirectory().');
 		}
+
 		return $this->tempDirectory . '/' . md5(serialize($this->getCacheKey())) . '.php';
 	}
 
