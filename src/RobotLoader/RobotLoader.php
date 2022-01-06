@@ -144,11 +144,6 @@ class RobotLoader
 	 */
 	public function addDirectory(...$paths): self
 	{
-		if (is_array($paths[0] ?? null)) {
-			trigger_error(__METHOD__ . '() use variadics ...$paths to add an array of paths.', E_USER_WARNING);
-			$paths = $paths[0];
-		}
-
 		$this->scanPaths = array_merge($this->scanPaths, $paths);
 		return $this;
 	}
@@ -167,11 +162,6 @@ class RobotLoader
 	 */
 	public function excludeDirectory(...$paths): self
 	{
-		if (is_array($paths[0] ?? null)) {
-			trigger_error(__METHOD__ . '() use variadics ...$paths to add an array of paths.', E_USER_WARNING);
-			$paths = $paths[0];
-		}
-
 		$this->excludeDirs = array_merge($this->excludeDirs, $paths);
 		return $this;
 	}
@@ -283,31 +273,22 @@ class RobotLoader
 
 		$dir = realpath($dir) ?: $dir; // realpath does not work in phar
 
-		if (is_string($ignoreDirs = $this->ignoreDirs)) {
-			trigger_error(self::class . ': $ignoreDirs must be an array.', E_USER_WARNING);
-			$ignoreDirs = preg_split('#[,\s]+#', $ignoreDirs);
-		}
 
 		$disallow = [];
-		foreach (array_merge($ignoreDirs, $this->excludeDirs) as $item) {
+		foreach (array_merge($this->ignoreDirs, $this->excludeDirs) as $item) {
 			if ($item = realpath($item)) {
 				$disallow[str_replace('\\', '/', $item)] = true;
 			}
 		}
 
-		if (is_string($acceptFiles = $this->acceptFiles)) {
-			trigger_error(self::class . ': $acceptFiles must be an array.', E_USER_WARNING);
-			$acceptFiles = preg_split('#[,\s]+#', $acceptFiles);
-		}
-
-		$iterator = Nette\Utils\Finder::findFiles(...$acceptFiles)
+		$iterator = Nette\Utils\Finder::findFiles(...$this->acceptFiles)
 			->filter(function (SplFileInfo $file) use (&$disallow) {
 				return $file->getRealPath() === false
 					? true
 					: !isset($disallow[str_replace('\\', '/', $file->getRealPath())]);
 			})
 			->from($dir)
-			->exclude(...$ignoreDirs)
+			->exclude(...$this->ignoreDirs)
 			->filter($filter = function (SplFileInfo $dir) use (&$disallow) {
 				if ($dir->getRealPath() === false) {
 					return true;
