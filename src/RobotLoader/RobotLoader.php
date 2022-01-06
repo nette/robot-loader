@@ -300,14 +300,14 @@ class RobotLoader
 			$acceptFiles = preg_split('#[,\s]+#', $acceptFiles);
 		}
 
-		$iterator = Nette\Utils\Finder::findFiles($acceptFiles)
+		$iterator = Nette\Utils\Finder::findFiles(...$acceptFiles)
 			->filter(function (SplFileInfo $file) use (&$disallow) {
 				return $file->getRealPath() === false
 					? true
 					: !isset($disallow[str_replace('\\', '/', $file->getRealPath())]);
 			})
 			->from($dir)
-			->exclude($ignoreDirs)
+			->exclude(...$ignoreDirs)
 			->filter($filter = function (SplFileInfo $dir) use (&$disallow) {
 				if ($dir->getRealPath() === false) {
 					return true;
