@@ -28,7 +28,7 @@ class RobotLoader
 {
 	use Nette\SmartObject;
 
-	private const RETRY_LIMIT = 3;
+	private const RetryLimit = 3;
 
 	/** @var string[] */
 	public $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
@@ -104,7 +104,7 @@ class RobotLoader
 		$this->loadCache();
 
 		$missing = $this->missingClasses[$type] ?? null;
-		if ($missing >= self::RETRY_LIMIT) {
+		if ($missing >= self::RetryLimit) {
 			return;
 		}
 
@@ -126,7 +126,7 @@ class RobotLoader
 
 			if (!$file || !is_file($file)) {
 				$this->missingClasses[$type] = ++$missing;
-				$this->needSave = $this->needSave || $file || ($missing <= self::RETRY_LIMIT);
+				$this->needSave = $this->needSave || $file || ($missing <= self::RetryLimit);
 				unset($this->classes[$type]);
 				$file = null;
 			}
@@ -479,7 +479,7 @@ class RobotLoader
 
 		$this->cacheLoaded = true;
 
-		$file = $this->getCacheFile();
+		$file = $this->generateCacheFileName();
 
 		// Solving atomicity to work everywhere is really pain in the ass.
 		// 1) We want to do as little as possible IO calls on production and also directory and file can be not writable (#19)
@@ -525,7 +525,7 @@ class RobotLoader
 		// we have to acquire a lock to be able safely rename file
 		// on Linux: that another thread does not rename the same named file earlier
 		// on Windows: that the file is not read by another thread
-		$file = $this->getCacheFile();
+		$file = $this->generateCacheFileName();
 		$lock = $lock ?: $this->acquireLock("$file.lock", LOCK_EX);
 		$code = "<?php\nreturn " . var_export([$this->classes, $this->missingClasses, $this->emptyFiles], true) . ";\n";
 
@@ -559,7 +559,7 @@ class RobotLoader
 	}
 
 
-	private function getCacheFile(): string
+	private function generateCacheFileName(): string
 	{
 		if (!$this->tempDirectory) {
 			throw new \LogicException('Set path to temporary directory using setTempDirectory().');
