@@ -513,11 +513,11 @@ class RobotLoader
 			throw new \LogicException('Set path to temporary directory using setTempDirectory().');
 		}
 
-		return $this->tempDirectory . '/' . md5(serialize($this->getCacheKey())) . '.php';
+		return $this->tempDirectory . '/' . md5(serialize($this->generateCacheKey())) . '.php';
 	}
 
 
-	protected function getCacheKey(): array
+	protected function generateCacheKey(): array
 	{
 		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths, $this->excludeDirs, 'v2'];
 	}
