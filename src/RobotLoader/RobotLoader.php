@@ -267,15 +267,15 @@ class RobotLoader
 			}
 		}
 
-		return Nette\Utils\Finder::findFiles(...$this->acceptFiles)
+		return Nette\Utils\Finder::findFiles($this->acceptFiles)
 			->filter($filter = function (SplFileInfo $file) use ($disallow) {
 				return $file->getRealPath() === false
 					? true
 					: !isset($disallow[str_replace('\\', '/', $file->getRealPath())]);
 			})
+			->descentFilter($filter)
 			->from($dir)
-			->exclude(...$this->ignoreDirs)
-			->filter($filter);
+			->exclude($this->ignoreDirs);
 	}
 
 
