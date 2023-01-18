@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Nette\Loaders;
 
 use Nette;
+use Nette\Utils\FileSystem;
 use SplFileInfo;
 
 
@@ -248,7 +249,7 @@ class RobotLoader
 
 
 	/**
-	 * Creates an iterator scaning directory for PHP files and subdirectories.
+	 * Creates an iterator scanning directory for PHP files and subdirectories.
 	 * @throws Nette\IOException if path is not found
 	 */
 	private function createFileIterator(string $dir): Nette\Utils\Finder
@@ -258,21 +259,16 @@ class RobotLoader
 		}
 
 		$dir = realpath($dir) ?: $dir; // realpath does not work in phar
-
-
 		$disallow = [];
 		foreach (array_merge($this->ignoreDirs, $this->excludeDirs) as $item) {
 			if ($item = realpath($item)) {
-				$disallow[str_replace('\\', '/', $item)] = true;
+				$disallow[FileSystem::unixSlashes($item)] = true;
 			}
 		}
 
 		return Nette\Utils\Finder::findFiles($this->acceptFiles)
-			->filter($filter = function (SplFileInfo $file) use ($disallow) {
-				return $file->getRealPath() === false
-					? true
-					: !isset($disallow[str_replace('\\', '/', $file->getRealPath())]);
-			})
+			->filter($filter = fn(SplFileInfo $file) => $file->getRealPath() === false
+				|| !isset($disallow[FileSystem::unixSlashes($file->getRealPath())]))
 			->descentFilter($filter)
 			->from($dir)
 			->exclude($this->ignoreDirs);
@@ -408,7 +404,7 @@ class RobotLoader
 	 */
 	public function setTempDirectory(string $dir): static
 	{
-		Nette\Utils\FileSystem::createDir($dir);
+		FileSystem::createDir($dir);
 		$this->tempDirectory = $dir;
 		return $this;
 	}
