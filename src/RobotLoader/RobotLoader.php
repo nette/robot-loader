@@ -27,8 +27,6 @@ use SplFileInfo;
  */
 class RobotLoader
 {
-	use Nette\SmartObject;
-
 	private const RetryLimit = 3;
 
 	/** @var string[] */
