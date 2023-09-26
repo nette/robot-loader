@@ -45,14 +45,18 @@ Assert::true(class_exists('D'));
 $loader = new RobotLoader;
 $loader->setTempDirectory(getTempDir());
 $loader->addDirectory("phar://$pharFile/non-dir");
-Assert::exception(function () use ($loader) {
-	$loader->rebuild();
-}, Nette\IOException::class, "File or directory 'phar://$pharFile/non-dir' not found.");
+Assert::exception(
+	fn() => $loader->rebuild(),
+	Nette\IOException::class,
+	"File or directory 'phar://$pharFile/non-dir' not found.",
+);
 
 
 $loader = new RobotLoader;
 $loader->setTempDirectory(getTempDir());
 $loader->addDirectory("phar://$pharFile/non-file.php");
-Assert::exception(function () use ($loader) {
-	$loader->rebuild();
-}, Nette\IOException::class, "File or directory 'phar://$pharFile/non-file.php' not found.");
+Assert::exception(
+	fn() => $loader->rebuild(),
+	Nette\IOException::class,
+	"File or directory 'phar://$pharFile/non-file.php' not found.",
+);

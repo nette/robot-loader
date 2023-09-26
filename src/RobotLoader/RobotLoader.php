@@ -78,7 +78,7 @@ class RobotLoader
 	 */
 	public function register(bool $prepend = false): static
 	{
-		spl_autoload_register([$this, 'tryLoad'], true, $prepend);
+		spl_autoload_register([$this, 'tryLoad'], prepend: $prepend);
 		return $this;
 	}
 
@@ -475,7 +475,7 @@ class RobotLoader
 		}
 
 		if (function_exists('opcache_invalidate')) {
-			@opcache_invalidate($file, true); // @ can be restricted
+			@opcache_invalidate($file, force: true); // @ can be restricted
 		}
 	}
 
