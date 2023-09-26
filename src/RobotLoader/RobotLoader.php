@@ -9,10 +9,6 @@ declare(strict_types=1);
 
 namespace Nette\Loaders;
 
-use Nette;
-use Nette\Utils\FileSystem;
-use SplFileInfo;
-
 
 /**
  * Nette auto loader is responsible for loading classes and interfaces.
@@ -60,7 +56,7 @@ class RobotLoader
 	public function __construct()
 	{
 		if (!extension_loaded('tokenizer')) {
-			throw new Nette\NotSupportedException('PHP extension Tokenizer is not loaded.');
+			throw new \LogicException('PHP extension Tokenizer is not loaded.');
 		}
 	}
 
@@ -211,12 +207,11 @@ class RobotLoader
 
 		foreach ($this->scanPaths as $path) {
 			$iterator = is_file($path)
-				? [new SplFileInfo($path)]
+				? [$path]
 				: $this->createFileIterator($path);
 
-			foreach ($iterator as $fileInfo) {
-				$mtime = $fileInfo->getMTime();
-				$file = $fileInfo->getPathname();
+			foreach ($iterator as $file) {
+				$mtime = filemtime($file);
 				$foundClasses = isset($files[$file]) && $files[$file] === $mtime
 					? ($classes[$file] ?? [])
 					: $this->scanPhp($file);
@@ -230,7 +225,7 @@ class RobotLoader
 
 				foreach ($foundClasses as $class) {
 					if (isset($this->classes[$class])) {
-						throw new Nette\InvalidStateException(sprintf(
+						throw new \RuntimeException(sprintf(
 							'Ambiguous class %s resolution; defined in %s and in %s.',
 							$class,
 							$this->classes[$class][0],
@@ -248,12 +243,12 @@ class RobotLoader
 
 	/**
 	 * Creates an iterator scanning directory for PHP files and subdirectories.
-	 * @throws Nette\IOException if path is not found
+	 * @throws \RuntimeException if path is not found
 	 */
-	private function createFileIterator(string $dir): Nette\Utils\Finder
+	private function createFileIterator(string $dir): \Generator
 	{
 		if (!is_dir($dir)) {
-			throw new Nette\IOException(sprintf("Directory '%s' not found.", $dir));
+			throw new \RuntimeException(sprintf("Directory '%s' not found.", $dir));
 		}
 
 		$dir = realpath($dir) ?: $dir; // realpath does not work in phar
@@ -264,11 +259,40 @@ class RobotLoader
 			}
 		}
 
-		return Nette\Utils\Finder::findFiles($this->acceptFiles)
-			->filter($filter = fn(SplFileInfo $file) => $file->getRealPath() === false || !isset($disallow[$file->getRealPath()]))
-			->descentFilter($filter)
-			->from($dir)
-			->exclude($this->ignoreDirs);
+		yield from $this->traverseDir($dir, $disallow);
+	}
+
+
+	private function traverseDir(string $dir, array $disallow): \Generator
+	{
+		try {
+			$files = new \FilesystemIterator($dir, \FilesystemIterator::FOLLOW_SYMLINKS | \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::CURRENT_AS_PATHNAME | \FilesystemIterator::UNIX_PATHS);
+		} catch (\RuntimeException) {
+			return;
+		}
+
+		foreach ($files as $file) {
+			$realPath = realpath($file);
+			$file = $realPath ?: $file;
+			if ($realPath && isset($disallow[$realPath])) {
+				continue;
+			} elseif (is_dir($file) && !self::matches(basename($file), $this->ignoreDirs)) {
+				yield from $this->traverseDir($file, $disallow);
+			} elseif (is_file($file) && self::matches(basename($file), $this->acceptFiles)) {
+				yield $file;
+			}
+		}
+	}
+
+
+	private static function matches(string $file, array $masks): bool
+	{
+		foreach ($masks as $mask) {
+			if (fnmatch($mask, $file)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 
@@ -291,7 +315,7 @@ class RobotLoader
 			}
 
 			if (isset($prevFile)) {
-				throw new Nette\InvalidStateException(sprintf(
+				throw new \RuntimeException(sprintf(
 					'Ambiguous class %s resolution; defined in %s and in %s.',
 					$class,
 					$prevFile,
@@ -397,7 +421,9 @@ class RobotLoader
 	 */
 	public function setTempDirectory(string $dir): static
 	{
-		FileSystem::createDir($dir);
+		if (!is_dir($dir) && !@mkdir($dir, recursive: true) && !is_dir($dir)) { // @ - dir may already exist
+			throw new \RuntimeException("Unable to create directory '$dir'");
+		}
 		$this->tempDirectory = $dir;
 		return $this;
 	}

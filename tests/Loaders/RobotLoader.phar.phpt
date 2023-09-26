@@ -47,7 +47,7 @@ $loader->setTempDirectory(getTempDir());
 $loader->addDirectory("phar://$pharFile/non-dir");
 Assert::exception(
 	fn() => $loader->rebuild(),
-	Nette\IOException::class,
+	RuntimeException::class,
 	"Directory 'phar://$pharFile/non-dir' not found.",
 );
 
@@ -57,6 +57,6 @@ $loader->setTempDirectory(getTempDir());
 $loader->addDirectory("phar://$pharFile/non-file.php");
 Assert::exception(
 	fn() => $loader->rebuild(),
-	Nette\IOException::class,
+	RuntimeException::class,
 	"Directory 'phar://$pharFile/non-file.php' not found.",
 );
