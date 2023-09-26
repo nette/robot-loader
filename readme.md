@@ -1,5 +1,4 @@
-RobotLoader: comfortable autoloading
-====================================
+[![RobotLoader](https://github.com/nette/robot-loader/assets/194960/53a155e2-5959-44c5-8944-d1b9ec203923)](https://doc.nette.org/en/robot-loader)
 
 [![Downloads this Month](https://img.shields.io/packagist/dm/nette/robot-loader.svg)](https://packagist.org/packages/nette/robot-loader)
 [![Tests](https://github.com/nette/robot-loader/workflows/Tests/badge.svg?branch=master)](https://github.com/nette/robot-loader/actions)
@@ -13,13 +12,13 @@ Introduction
 
 RobotLoader is a tool that gives you comfort of automated class loading for your entire application including third-party libraries.
 
-- get rid of all `require`
-- does not require strict directory or file naming conventions
-- extremely fast
-- no manual cache updates, everything runs automatically
-- highly mature, stable and widely used library
+✅ get rid of all `require`<br>
+✅ doesn't require strict naming conventions for directories or files<br>
+✅ extremely fast<br>
+✅ no manual cache updates, everything runs automatically<br>
+✅ mature, stable and widely used library<br>
 
-So we can forget about those famous code blocks:
+Thus, we can forget about these familiar code blocks:
 
 ```php
 require_once 'Utils/Page.php';
@@ -27,6 +26,8 @@ require_once 'Utils/Style.php';
 require_once 'Utils/Paginator.php';
 ...
 ```
+
+ <!---->
 
 [Support Me](https://github.com/sponsors/dg)
 --------------------------------------------
@@ -37,11 +38,21 @@ Do you like RobotLoader? Are you looking forward to the new features?
 
 Thank you!
 
+ <!---->
 
 Installation
 ------------
 
-The recommended way to install is via Composer:
+You can download RobotLoader as a [single standalone file `RobotLoader.php`](https://github.com/nette/robot-loader/raw/standalone/src/RobotLoader/RobotLoader.php), which you include using `require` in your script, and instantly enjoy comfortable autoloading for the entire application.
+
+```php
+require '/path/to/RobotLoader.php';
+
+$loader = new Nette\Loaders\RobotLoader;
+// ...
+```
+
+If you're building an application using [Composer](https://doc.nette.org/en/best-practices/composer), you can install it via:
 
 ```shell
 composer require nette/robot-loader
@@ -49,83 +60,90 @@ composer require nette/robot-loader
 
 It requires PHP version 8.0 and supports PHP up to 8.3.
 
+ <!---->
 
 Usage
 -----
 
-Like the Google robot crawls and indexes websites, [RobotLoader](https://api.nette.org/3.0/Nette/Loaders/RobotLoader.html) crawls all PHP scripts and records what classes and interfaces were found in them. These records are then saved in cache and used during all subsequent requests. You just need to specify what directories to index and where to save the cache:
+Similar to how the Google robot crawls and indexes web pages, the [RobotLoader](https://api.nette.org/robot-loader/master/Nette/Loaders/RobotLoader.html) goes through all PHP scripts and notes which classes, interfaces, traits and enums it found. It then stores the results in cache for use in subsequent requests. You just need to specify which directories it should go through and where to store the cache:
 
 ```php
 $loader = new Nette\Loaders\RobotLoader;
 
-// directories to be indexed by RobotLoader (including subdirectories)
+// Directories for RobotLoader to index (including subdirectories)
 $loader->addDirectory(__DIR__ . '/app');
 $loader->addDirectory(__DIR__ . '/libs');
 
-// use 'temp' directory for cache
+// Set caching to the 'temp' directory
 $loader->setTempDirectory(__DIR__ . '/temp');
-$loader->register(); // Run the RobotLoader
+$loader->register(); // Activate RobotLoader
 ```
 
-And that's all. From now on, you don't need to use `require`. Great, isn't it?
+And that's it, from this point on, we don't need to use `require`. Awesome!
 
-When RobotLoader encounters duplicate class name during indexing, it throws an exception and informs you about it. RobotLoader also automatically updates the cache when it has to load a class it doesn't know. We recommend disabling this on production servers, see [Caching](#Caching).
+If RobotLoader encounters a duplicate class name during indexing, it will throw an exception and notify you. RobotLoader also automatically updates the cache when it needs to load an unknown class. We recommend turning this off on production servers, see [#Caching].
 
-If you want RobotLoader to skip some directories, use `$loader->excludeDirectory('temp')` (it can be called multiple times or you can pass multiple directories).
+If you want RobotLoader to skip certain directories, use `$loader->excludeDirectory('temp')` (can be called multiple times or pass multiple directories).
 
-By default, RobotLoader reports errors in PHP files by throwing exception `ParseError`. It can be disabled via `$loader->reportParseErrors(false)`.
+By default, RobotLoader reports errors in PHP files by throwing a `ParseError` exception. This can be suppressed using `$loader->reportParseErrors(false)`.
 
+ <!---->
 
 PHP Files Analyzer
 ------------------
 
-RobotLoader can also be used purely to find classes, interfaces, and trait in PHP files **without** using the autoloading feature:
+RobotLoader can also be used purely for finding classes, interfaces, traits and enums in PHP files **without** using the autoloading function:
 
 ```php
 $loader = new Nette\Loaders\RobotLoader;
 $loader->addDirectory(__DIR__ . '/app');
 
-// Scans directories for classes / intefaces / traits
+// Scans directories for classes/interfaces/traits/enums
 $loader->rebuild();
 
-// Returns array of class => filename pairs
+// Returns an array of class => filename pairs
 $res = $loader->getIndexedClasses();
 ```
 
-Even with such use, you can use the cache. As a result, unmodified files will not be repeatedly analyzed when rescanning:
+Even with such usage, you can utilize caching. This ensures that unchanged files won't be rescanned:
 
 ```php
 $loader = new Nette\Loaders\RobotLoader;
 $loader->addDirectory(__DIR__ . '/app');
+
+// Set caching to the 'temp' directory
 $loader->setTempDirectory(__DIR__ . '/temp');
 
-// Scans directories using a cache
+// Scans directories using cache
 $loader->refresh();
 
-// Returns array of class => filename pairs
+// Returns an array of class => filename pairs
 $res = $loader->getIndexedClasses();
 ```
+
+ <!---->
 
 Caching
 -------
 
-RobotLoader is very fast because it cleverly uses the cache.
+RobotLoader is very fast because it cleverly uses caching.
 
-When developing with it, you have practically no idea that it runs on the background. It continuously updates the cache because it knows that classes and files can be created, deleted, renamed, etc. And it doesn't repeatedly scan unmodified files.
+During development, you hardly notice it running in the background. It continuously updates its cache, considering that classes and files can be created, deleted, renamed, etc. And it doesn't rescan unchanged files.
 
-When used on a production server, on the other hand, we recommend disabling the cache update using `$loader->setAutoRefresh(false)`, because the files are not changing. At the same time, it is necessary to **clear the cache** when uploading a new version on the hosting.
+On a production server, on the other hand, we recommend turning off cache updates using `$loader->setAutoRefresh(false)` (in a Nette Application, this happens automatically), because files don't change. At the same time, it's necessary to **clear the cache** when uploading a new version to hosting.
 
-Of course, the initial scanning of files, when the cache does not already exist, may take a few seconds for larger applications. RobotLoader has built-in prevention against [cache stampede](https://en.wikipedia.org/wiki/Cache_stampede).
-This is a situation where production server receives a large number of concurrent requests and because RobotLoader's cache does not yet exist, they would all start scanning the files. Which spikes CPU and filesystem usage.
-Fortunately, RobotLoader works in such a way that for multiple concurrent requests, only the first thread indexes the files, creates a cache, the others wait, and then use the cache.
+The initial file scanning, when the cache doesn't exist yet, can naturally take a moment for larger applications. RobotLoader has built-in prevention against [cache stampede](https://en.wikipedia.org/wiki/Cache_stampede).
+This is a situation where a large number of concurrent requests on a production server would trigger RobotLoader, and since the cache doesn't exist yet, they would all start scanning files, which would overload the server.
+Fortunately, RobotLoader works in such a way that only the first thread indexes the files, creates the cache, and the rest wait and then use the cache.
 
+ <!---->
 
 PSR-4
 -----
 
-Today, Composer can be used for autoloading in compliance with PSR-4. Simply saying, it is a system where the namespaces and class names correspond to the directory structure and file names, ie `App\Router\RouterFactory` is located in the file `/path/to/App/Router/RouterFactory.php`.
+Nowadays, you can use [Composer for autoloading](https://doc.nette.org/en/best-practices/composer#toc-autoloading) while adhering to PSR-4. Simply put, it's a system where namespaces and class names correspond to the directory structure and file names, e.g., `App\Router\RouterFactory` will be in the file `/path/to/App/Router/RouterFactory.php`.
 
-RobotLoader is not tied to any fixed structure, therefore, it is useful in situations where it does not suit you to have the directory structure designed as namespaces in PHP, or when you are developing an application that has historically not used such conventions. It is also possible to use both loaders together.
+RobotLoader isn't tied to any fixed structure, so it's useful in situations where you don't want to have the directory structure designed exactly like the PHP namespaces, or when developing an application that historically doesn't use such conventions. It's also possible to use both loaders together.
 
 
 If you like RobotLoader, **[please make a donation now](https://nette.org/donate)**. Thank you!
