@@ -41,7 +41,16 @@ Thank you!
 Installation
 ------------
 
-The recommended way to install is via Composer:
+You can download RobotLoader as a [single standalone file `RobotLoader.php`](https://github.com/nette/robot-loader/raw/standalone/src/RobotLoader/RobotLoader.php), which you can include in your script using `require`, and immediately have convenient autoloading for your entire application:
+
+```php
+require '/path/to/RobotLoader.php';
+
+$loader = new Nette\Loaders\RobotLoader;
+// ...
+```
+
+If you are building an application that uses Composer, you can install it through it:
 
 ```shell
 composer require nette/robot-loader
