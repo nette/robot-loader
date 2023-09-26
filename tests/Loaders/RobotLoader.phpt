@@ -20,6 +20,7 @@ $loader->addDirectory(__DIR__ . '/files/'); // purposely doubled
 $loader->addDirectory(__DIR__ . '/file/interface.php'); // as file
 $loader->addDirectory(__DIR__ . '/file/class.const.php');
 $loader->addDirectory(__DIR__ . '/file/trait.php');
+$loader->addDirectory(__DIR__ . '/file/bug-28.php');
 $loader->excludeDirectory(__DIR__ . '/files/exclude');
 $loader->excludeDirectory(__DIR__ . '/files/exclude2/excluded.php');
 $loader->register();
@@ -27,6 +28,7 @@ $loader->register();
 Assert::false(class_exists('ConditionalClass'));   // files/conditional.class.php
 Assert::true(interface_exists('TestInterface'));   // file/interface.php
 Assert::true(trait_exists('TestTrait')); // file/trait.php
+Assert::true(class_exists('Bug28')); // file/bug-28.php
 
 Assert::true(class_exists('TestClass'));           // files/namespaces1.php
 Assert::true(class_exists('MySpace1\TestClass1')); // files/namespaces1.php

@@ -355,10 +355,6 @@ class RobotLoader
 					$expected = $token->id;
 					$name = '';
 					continue 2;
-
-				case T_CURLY_OPEN:
-				case T_DOLLAR_OPEN_CURLY_BRACES:
-					$level++;
 			}
 
 			if ($expected) {
