@@ -48,7 +48,7 @@ $loader->addDirectory("phar://$pharFile/non-dir");
 Assert::exception(
 	fn() => $loader->rebuild(),
 	Nette\IOException::class,
-	"File or directory 'phar://$pharFile/non-dir' not found.",
+	"Directory 'phar://$pharFile/non-dir' not found.",
 );
 
 
@@ -58,5 +58,5 @@ $loader->addDirectory("phar://$pharFile/non-file.php");
 Assert::exception(
 	fn() => $loader->rebuild(),
 	Nette\IOException::class,
-	"File or directory 'phar://$pharFile/non-file.php' not found.",
+	"Directory 'phar://$pharFile/non-file.php' not found.",
 );

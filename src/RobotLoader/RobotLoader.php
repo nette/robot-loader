@@ -253,20 +253,19 @@ class RobotLoader
 	private function createFileIterator(string $dir): Nette\Utils\Finder
 	{
 		if (!is_dir($dir)) {
-			throw new Nette\IOException(sprintf("File or directory '%s' not found.", $dir));
+			throw new Nette\IOException(sprintf("Directory '%s' not found.", $dir));
 		}
 
 		$dir = realpath($dir) ?: $dir; // realpath does not work in phar
 		$disallow = [];
 		foreach (array_merge($this->ignoreDirs, $this->excludeDirs) as $item) {
 			if ($item = realpath($item)) {
-				$disallow[FileSystem::unixSlashes($item)] = true;
+				$disallow[$item] = true;
 			}
 		}
 
 		return Nette\Utils\Finder::findFiles($this->acceptFiles)
-			->filter($filter = fn(SplFileInfo $file) => $file->getRealPath() === false
-				|| !isset($disallow[FileSystem::unixSlashes($file->getRealPath())]))
+			->filter($filter = fn(SplFileInfo $file) => $file->getRealPath() === false || !isset($disallow[$file->getRealPath()]))
 			->descentFilter($filter)
 			->from($dir)
 			->exclude($this->ignoreDirs);
@@ -286,7 +285,7 @@ class RobotLoader
 		foreach ($foundClasses as $class) {
 			[$prevFile, $prevMtime] = $this->classes[$class] ?? null;
 
-			if (isset($prevFile) && @filemtime($prevFile) !== $prevMtime) { // @ file may not exists
+			if (isset($prevFile) && @filemtime($prevFile) !== $prevMtime) { // @ file may not exist
 				$this->updateFile($prevFile);
 				[$prevFile] = $this->classes[$class] ?? null;
 			}
