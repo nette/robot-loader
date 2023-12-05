@@ -397,6 +397,9 @@ class RobotLoader
 	 */
 	public function setTempDirectory(string $dir): static
 	{
+		if (!FileSystem::isAbsolute($dir)) {
+			throw new Nette\InvalidArgumentException("Temporary directory must be absolute, '$dir' given.");
+		}
 		FileSystem::createDir($dir);
 		$this->tempDirectory = $dir;
 		return $this;
