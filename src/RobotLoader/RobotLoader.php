@@ -27,17 +27,18 @@ use SplFileInfo;
  */
 class RobotLoader
 {
+	/** @var string[] */
+	public array $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
+
+	/** @var string[] */
+	public array $acceptFiles = ['*.php'];
+
 	/** @var int */
 	private $retryLimit = 3;
 
 	/** @var string[] */
 	private $exclusions = [];
 
-	/** @var string[] */
-	public array $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
-
-	/** @var string[] */
-	public array $acceptFiles = ['*.php'];
 	private bool $autoRebuild = true;
 	private bool $reportParseErrors = true;
 
