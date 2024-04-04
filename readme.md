@@ -132,6 +132,22 @@ This is a situation where a large number of concurrent requests on a production 
 Fortunately, RobotLoader works in such a way that only the first thread indexes the files, creates the cache, and the rest wait and then use the cache.
 
 
+Performance under stress
+------------------------
+
+If auto-refresh is enabled it is possible to get concurrency issues prior to stabilization.
+
+This is because parallel requests may all be updating the cache to notify about (possibly the same) missing classes, and under intense conditions (such as aggressive parallelism of PHPStan) the cache may be updated at the same time as being read.
+This only affects filesystems where the `rename` operation is not atomic.
+
+This problem can be mitigated by reducing the retry-limit, and adding exclusions for classes you know Robotloader cannot find or have their own autoloaders:
+```php
+$loader->setRetryLimit(1);
+$loader->addExclusion('PHPStan\\ExtensionInstaller\\GeneratedConfig', 'JsonIncrementalParser');
+```
+(this example has some classes that PHPStan tries to load and Robotloader cannot find)
+
+
 PSR-4
 -----
 
