@@ -135,9 +135,9 @@ class RobotLoader
 	}
 
 
-	public function reportParseErrors(bool $on = true): static
+	public function reportParseErrors(bool $state = true): static
 	{
-		$this->reportParseErrors = $on;
+		$this->reportParseErrors = $state;
 		return $this;
 	}
 
@@ -385,9 +385,9 @@ class RobotLoader
 	/**
 	 * Sets auto-refresh mode.
 	 */
-	public function setAutoRefresh(bool $on = true): static
+	public function setAutoRefresh(bool $state = true): static
 	{
-		$this->autoRebuild = $on;
+		$this->autoRebuild = $state;
 		return $this;
 	}
 
