@@ -27,13 +27,18 @@ use SplFileInfo;
  */
 class RobotLoader
 {
-	private const RetryLimit = 3;
-
 	/** @var string[] */
 	public array $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
 
 	/** @var string[] */
 	public array $acceptFiles = ['*.php'];
+
+	/** @var int */
+	private $retryLimit = 3;
+
+	/** @var string[] */
+	private $exclusions = [];
+
 	private bool $autoRebuild = true;
 	private bool $reportParseErrors = true;
 
@@ -88,10 +93,14 @@ class RobotLoader
 	 */
 	public function tryLoad(string $type): void
 	{
+		if (isset($this->exclusions[$type])) {
+			return;
+		}
+
 		$this->loadCache();
 
 		$missing = $this->missingClasses[$type] ?? null;
-		if ($missing >= self::RetryLimit) {
+		if ($missing !== null && $missing >= $this->getRetryLimit()) {
 			return;
 		}
 
@@ -113,7 +122,7 @@ class RobotLoader
 
 			if (!$file || !is_file($file)) {
 				$this->missingClasses[$type] = ++$missing;
-				$this->needSave = $this->needSave || $file || ($missing <= self::RetryLimit);
+				$this->needSave = $this->needSave || $file || ($missing <= $this->getRetryLimit());
 				unset($this->classes[$type]);
 				$file = null;
 			}
@@ -122,6 +131,41 @@ class RobotLoader
 		if ($file) {
 			(static function ($file) { require $file; })($file);
 		}
+	}
+
+
+	/**
+	 * Sets how many times we try to scan for a class if we do not know it.
+	 * Number of tries is defined per-cache, not per-request.
+	 * @param  int  $retryLimit  Number of times to try
+	 */
+	public function setRetryLimit(int $retryLimit): self
+	{
+		if ($retryLimit <= 1) {
+			$retryLimit = 1;
+		}
+		$this->retryLimit = $retryLimit;
+		return $this;
+	}
+
+
+	private function getRetryLimit(): int
+	{
+		return $this->retryLimit;
+	}
+
+
+	/**
+	 * Set a list of classes to never scan for.
+	 * Helps performance and reduces cache clobbering in parallel scenarios,
+	 * for cases where we know we will never find that class
+	 * (maybe just a class_exists check is running on it for example).
+	 * @param  string  ...$types  types
+	 */
+	public function addExclusion(string ...$types): self
+	{
+		$this->exclusions += array_flip($types);
+		return $this;
 	}
 
 
@@ -509,6 +553,7 @@ class RobotLoader
 
 	protected function generateCacheKey(): array
 	{
+		// Note that exclusions and retryLimit are not included, as these are run-time behavioral settings and don't affect cache state
 		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths, $this->excludeDirs, 'v2'];
 	}
 }
