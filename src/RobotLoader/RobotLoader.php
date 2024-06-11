@@ -503,7 +503,7 @@ class RobotLoader
 			throw new \LogicException('Set path to temporary directory using setTempDirectory().');
 		}
 
-		return $this->tempDirectory . '/' . md5(serialize($this->generateCacheKey())) . '.php';
+		return $this->tempDirectory . '/' . hash(PHP_VERSION_ID < 80100 ? 'md5' : 'xxh128', serialize($this->generateCacheKey())) . '.php';
 	}
 
 
