@@ -12,6 +12,8 @@ namespace Nette\Loaders;
 use Nette;
 use Nette\Utils\FileSystem;
 use SplFileInfo;
+use function array_merge, defined, extension_loaded, file_get_contents, file_put_contents, filemtime, flock, fopen, function_exists, hash, is_array, is_dir, is_file, realpath, rename, serialize, spl_autoload_register, sprintf, strlen, unlink, var_export;
+use const LOCK_EX, LOCK_SH, LOCK_UN, T_CLASS, T_COMMENT, T_DOC_COMMENT, T_ENUM, T_INTERFACE, T_NAME_QUALIFIED, T_NAMESPACE, T_STRING, T_TRAIT, T_WHITESPACE, TOKEN_PARSE;
 
 
 /**
