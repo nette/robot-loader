@@ -321,7 +321,6 @@ class RobotLoader
 		} catch (\ParseError $e) {
 			if ($this->reportParseErrors) {
 				$rp = new \ReflectionProperty($e, 'file');
-				$rp->setAccessible(true);
 				$rp->setValue($e, $file);
 				throw $e;
 			}
@@ -348,9 +347,7 @@ class RobotLoader
 				case T_CLASS:
 				case T_INTERFACE:
 				case T_TRAIT:
-				case PHP_VERSION_ID < 80100
-					? T_CLASS
-					: T_ENUM:
+				case T_ENUM:
 					$expected = $token->id;
 					$name = '';
 					continue 2;
@@ -503,7 +500,7 @@ class RobotLoader
 			throw new \LogicException('Set path to temporary directory using setTempDirectory().');
 		}
 
-		return $this->tempDirectory . '/' . hash(PHP_VERSION_ID < 80100 ? 'md5' : 'xxh128', serialize($this->generateCacheKey())) . '.php';
+		return $this->tempDirectory . '/' . hash('xxh128', serialize($this->generateCacheKey())) . '.php';
 	}
 
 
