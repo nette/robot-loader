@@ -80,7 +80,7 @@ class RobotLoader
 	 */
 	public function register(bool $prepend = false): static
 	{
-		spl_autoload_register([$this, 'tryLoad'], prepend: $prepend);
+		spl_autoload_register($this->tryLoad(...), prepend: $prepend);
 		return $this;
 	}
 
@@ -464,7 +464,7 @@ class RobotLoader
 		// on Windows: that the file is not read by another thread
 		$file = $this->generateCacheFileName();
 		$lock = $lock ?: $this->acquireLock("$file.lock", LOCK_EX);
-		$code = "<?php\nreturn " . var_export([$this->classes, $this->missingClasses, $this->emptyFiles], true) . ";\n";
+		$code = "<?php\nreturn " . var_export([$this->classes, $this->missingClasses, $this->emptyFiles], return: true) . ";\n";
 
 		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
 			@unlink("$file.tmp"); // @ file may not exist
