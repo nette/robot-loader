@@ -31,21 +31,21 @@ class RobotLoader
 {
 	private const RetryLimit = 3;
 
-	/** @var string[] */
+	/** @var list<string> */
 	public array $ignoreDirs = ['.*', '*.old', '*.bak', '*.tmp', 'temp'];
 
-	/** @var string[] */
+	/** @var list<string> */
 	public array $acceptFiles = ['*.php'];
 	private bool $autoRebuild = true;
 	private bool $reportParseErrors = true;
 
-	/** @var string[] */
+	/** @var list<string> */
 	private array $scanPaths = [];
 
-	/** @var string[] */
+	/** @var list<string> */
 	private array $excludeDirs = [];
 
-	/** @var array<string, array{string, int}>  class => [file, time] */
+	/** @var array<class-string, array{string, int}>  class => [file, time] */
 	private array $classes = [];
 	private bool $cacheLoaded = false;
 	private bool $refreshed = false;
@@ -155,7 +155,7 @@ class RobotLoader
 
 
 	/**
-	 * @return array<string, string>  class => filename
+	 * @return array<class-string, string>  class => filename
 	 */
 	public function getIndexedClasses(): array
 	{
@@ -308,7 +308,7 @@ class RobotLoader
 
 	/**
 	 * Searches classes, interfaces and traits in PHP file.
-	 * @return string[]
+	 * @return list<class-string>
 	 */
 	private function scanPhp(string $file): array
 	{
@@ -477,7 +477,10 @@ class RobotLoader
 	}
 
 
-	/** @return resource */
+	/**
+	 * @param  LOCK_SH|LOCK_EX  $mode
+	 * @return resource
+	 */
 	private function acquireLock(string $file, int $mode)
 	{
 		$handle = @fopen($file, 'w'); // @ is escalated to exception
@@ -506,6 +509,7 @@ class RobotLoader
 	}
 
 
+	/** @return array{list<string>, list<string>, list<string>, list<string>, string} */
 	protected function generateCacheKey(): array
 	{
 		return [$this->ignoreDirs, $this->acceptFiles, $this->scanPaths, $this->excludeDirs, 'v2'];
