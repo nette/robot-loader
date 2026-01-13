@@ -95,18 +95,18 @@ class RobotLoader
 			return;
 		}
 
-		[$file, $mtime] = $this->classes[$type] ?? null;
+		[$file, $mtime] = $this->classes[$type] ?? [null, null];
 
 		if ($this->autoRebuild) {
 			if (!$this->refreshed) {
 				if (!$file || !is_file($file)) {
 					$this->refreshClasses();
-					[$file] = $this->classes[$type] ?? null;
+					[$file] = $this->classes[$type] ?? [null, null];
 					$this->needSave = true;
 
 				} elseif (filemtime($file) !== $mtime) {
 					$this->updateFile($file);
-					[$file] = $this->classes[$type] ?? null;
+					[$file] = $this->classes[$type] ?? [null, null];
 					$this->needSave = true;
 				}
 			}
@@ -130,7 +130,7 @@ class RobotLoader
 	 */
 	public function addDirectory(string ...$paths): static
 	{
-		$this->scanPaths = array_merge($this->scanPaths, $paths);
+		$this->scanPaths = array_merge($this->scanPaths, array_values($paths));
 		return $this;
 	}
 
@@ -147,7 +147,7 @@ class RobotLoader
 	 */
 	public function excludeDirectory(string ...$paths): static
 	{
-		$this->excludeDirs = array_merge($this->excludeDirs, $paths);
+		$this->excludeDirs = array_merge($this->excludeDirs, array_values($paths));
 		return $this;
 	}
 
@@ -283,11 +283,11 @@ class RobotLoader
 		$foundClasses = is_file($file) ? $this->scanPhp($file) : [];
 
 		foreach ($foundClasses as $class) {
-			[$prevFile, $prevMtime] = $this->classes[$class] ?? null;
+			[$prevFile, $prevMtime] = $this->classes[$class] ?? [null, null];
 
 			if (isset($prevFile) && @filemtime($prevFile) !== $prevMtime) { // @ file may not exist
 				$this->updateFile($prevFile);
-				[$prevFile] = $this->classes[$class] ?? null;
+				[$prevFile] = $this->classes[$class] ?? [null, null];
 			}
 
 			if (isset($prevFile)) {
@@ -299,7 +299,7 @@ class RobotLoader
 				));
 			}
 
-			$this->classes[$class] = [$file, filemtime($file)];
+			$this->classes[$class] = [$file, (int) filemtime($file)];
 		}
 	}
 
@@ -483,13 +483,13 @@ class RobotLoader
 	{
 		$handle = @fopen($file, 'w'); // @ is escalated to exception
 		if (!$handle) {
-			throw new \RuntimeException(sprintf("Unable to create file '%s'. %s", $file, error_get_last()['message']));
+			throw new \RuntimeException(sprintf("Unable to create file '%s'. %s", $file, error_get_last()['message'] ?? ''));
 		} elseif (!@flock($handle, $mode)) { // @ is escalated to exception
 			throw new \RuntimeException(sprintf(
 				"Unable to acquire %s lock on file '%s'. %s",
 				$mode & LOCK_EX ? 'exclusive' : 'shared',
 				$file,
-				error_get_last()['message'],
+				error_get_last()['message'] ?? '',
 			));
 		}
 

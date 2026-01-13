@@ -1,5 +1,20 @@
 parameters:
-	level: 5
+	level: 8
 
 	paths:
 		- src
+
+	checkMissingCallableSignature: true
+
+	ignoreErrors:
+		-
+			message: '#^Method Nette\\Loaders\\RobotLoader\:\:scanPhp\(\) should return list\<class\-string\> but returns list\<non\-falsy\-string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/RobotLoader/RobotLoader.php
+
+		-
+			message: '#^Parameter \#1 \$code of static method PhpToken\:\:tokenize\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/RobotLoader/RobotLoader.php
