@@ -132,7 +132,7 @@ class RobotLoader
 	 */
 	public function addDirectory(string ...$paths): static
 	{
-		$this->scanPaths = array_merge($this->scanPaths, $paths);
+		$this->scanPaths = array_merge($this->scanPaths, array_values($paths));
 		return $this;
 	}
 
@@ -149,7 +149,7 @@ class RobotLoader
 	 */
 	public function excludeDirectory(string ...$paths): static
 	{
-		$this->excludeDirs = array_merge($this->excludeDirs, $paths);
+		$this->excludeDirs = array_merge($this->excludeDirs, array_values($paths));
 		return $this;
 	}
 
@@ -301,7 +301,7 @@ class RobotLoader
 				));
 			}
 
-			$this->classes[$class] = [$file, filemtime($file)];
+			$this->classes[$class] = [$file, (int) filemtime($file)];
 		}
 	}
 

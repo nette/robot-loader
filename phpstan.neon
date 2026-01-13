@@ -1,5 +1,32 @@
 parameters:
-	level: 5
+	level: 7
 
 	paths:
 		- src
+
+	checkMissingCallableSignature: true
+
+	ignoreErrors:
+		-
+			message: '#^Method Nette\\Loaders\\RobotLoader\:\:scanPhp\(\) should return list\<class\-string\> but returns list\<non\-falsy\-string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/RobotLoader/RobotLoader.php
+
+		-
+			message: '#^Parameter \#1 \$code of static method PhpToken\:\:tokenize\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/RobotLoader/RobotLoader.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: src/RobotLoader/RobotLoader.php
+
+		-
+			message: '#^Variable \$prevFile in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.variable
+			count: 2
+			path: src/RobotLoader/RobotLoader.php
