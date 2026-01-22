@@ -1,9 +1,6 @@
-name: Static Analysis (only informative)
+name: Static Analysis
 
-on:
-    push:
-        branches:
-          - master
+on: [push, pull_request]
 
 jobs:
     phpstan:
@@ -18,4 +15,3 @@ jobs:
 
             - run: composer install --no-progress --prefer-dist
             - run: composer phpstan -- --no-progress
-              continue-on-error: true # is only informative
