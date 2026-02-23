@@ -1,12 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Test: Nette\Loaders\RobotLoader loading from PHAR.
  *
  * @phpIni phar.readonly=0
  */
-
-declare(strict_types=1);
 
 use Nette\Loaders\RobotLoader;
 use Tester\Assert;

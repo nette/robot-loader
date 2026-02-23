@@ -1,10 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Test: Nette\Loaders\RobotLoader rebuild only once.
  */
-
-declare(strict_types=1);
 
 use Nette\Loaders\RobotLoader;
 use Tester\Assert;
