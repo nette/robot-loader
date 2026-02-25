@@ -28,7 +28,7 @@ Phar::loadPhar($pharFile, 'test.phar');
 
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(getTempDir());
+$loader->setCacheDirectory(getTempDir());
 $loader->addDirectory("phar://$pharFile/sub");
 $loader->addDirectory("PHAR://$pharFile/class.B.php");
 $loader->addDirectory('phar://test.phar/class.C.php');
@@ -41,7 +41,7 @@ Assert::true(class_exists('D'));
 
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(getTempDir());
+$loader->setCacheDirectory(getTempDir());
 $loader->addDirectory("phar://$pharFile/non-dir");
 Assert::exception(
 	fn() => $loader->rebuild(),
@@ -51,7 +51,7 @@ Assert::exception(
 
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(getTempDir());
+$loader->setCacheDirectory(getTempDir());
 $loader->addDirectory("phar://$pharFile/non-file.php");
 Assert::exception(
 	fn() => $loader->rebuild(),

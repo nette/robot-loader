@@ -15,7 +15,7 @@ $dir = realpath(getTempDir()) . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEP
 mkdir($dir);
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(getTempDir());
+$loader->setCacheDirectory(getTempDir());
 $loader->addDirectory($dir);
 
 file_put_contents($dir . 'file1.php', '<?php class A {}');

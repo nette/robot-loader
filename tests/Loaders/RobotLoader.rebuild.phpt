@@ -17,7 +17,7 @@ file_put_contents($dir . '/file1.php', '<?php class A {}');
 file_put_contents($dir . '/file2.php', '<?php class B {}');
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(getTempDir());
+$loader->setCacheDirectory(getTempDir());
 $loader->addDirectory($dir);
 $loader->register();
 class_exists('x'); // rebuilds cache
@@ -28,7 +28,7 @@ Assert::false(class_exists('A'));
 
 
 $loader2 = new RobotLoader;
-$loader2->setTempDirectory(getTempDir());
+$loader2->setCacheDirectory(getTempDir());
 $loader2->addDirectory($dir);
 $loader2->register();
 

@@ -11,7 +11,7 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(getTempDir());
+$loader->setCacheDirectory(getTempDir());
 
 Assert::noError(
 	function () use ($loader) {

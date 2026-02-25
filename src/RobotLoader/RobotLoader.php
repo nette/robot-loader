@@ -21,7 +21,7 @@ use const LOCK_EX, LOCK_SH, LOCK_UN, T_CLASS, T_COMMENT, T_DOC_COMMENT, T_ENUM, 
  * $loader = new Nette\Loaders\RobotLoader;
  * $loader->addDirectory('app');
  * $loader->excludeDirectory('app/exclude');
- * $loader->setTempDirectory('temp');
+ * $loader->setCacheDirectory('temp');
  * $loader->register();
  * </code>
  */
@@ -53,7 +53,7 @@ class RobotLoader
 
 	/** @var array<string, int>  file => mtime */
 	private array $emptyFiles = [];
-	private ?string $tempDirectory = null;
+	private ?string $cacheDirectory = null;
 	private bool $needSave = false;
 
 
@@ -175,7 +175,7 @@ class RobotLoader
 		$this->cacheLoaded = true;
 		$this->classes = $this->missingClasses = $this->emptyFiles = [];
 		$this->refreshClasses();
-		if ($this->tempDirectory) {
+		if ($this->cacheDirectory) {
 			$this->saveCache();
 		}
 	}
@@ -390,16 +390,23 @@ class RobotLoader
 
 
 	/**
-	 * Sets path to temporary directory.
+	 * Sets the directory for storing cache.
 	 */
-	public function setTempDirectory(string $dir): static
+	public function setCacheDirectory(string $dir): static
 	{
 		if (!FileSystem::isAbsolute($dir)) {
-			throw new Nette\InvalidArgumentException("Temporary directory must be absolute, '$dir' given.");
+			throw new Nette\InvalidArgumentException("Cache directory must be absolute, '$dir' given.");
 		}
 		FileSystem::createDir($dir);
-		$this->tempDirectory = $dir;
+		$this->cacheDirectory = $dir;
 		return $this;
+	}
+
+
+	/** @deprecated  use setCacheDirectory() */
+	public function setTempDirectory(string $dir): static
+	{
+		return $this->setCacheDirectory($dir);
 	}
 
 
@@ -499,11 +506,11 @@ class RobotLoader
 
 	private function generateCacheFileName(): string
 	{
-		if (!$this->tempDirectory) {
-			throw new \LogicException('Set path to temporary directory using setTempDirectory().');
+		if (!$this->cacheDirectory) {
+			throw new \LogicException('Set path to temporary directory using setCacheDirectory().');
 		}
 
-		return $this->tempDirectory . '/' . hash('xxh128', serialize($this->generateCacheKey())) . '.php';
+		return $this->cacheDirectory . '/' . hash('xxh128', serialize($this->generateCacheKey())) . '.php';
 	}
 
 

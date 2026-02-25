@@ -75,7 +75,7 @@ $loader->addDirectory(__DIR__ . '/app');
 $loader->addDirectory(__DIR__ . '/libs');
 
 // Set caching to the 'temp' directory
-$loader->setTempDirectory(__DIR__ . '/temp');
+$loader->setCacheDirectory(__DIR__ . '/temp');
 $loader->register(); // Activate RobotLoader
 ```
 
@@ -112,7 +112,7 @@ $loader = new Nette\Loaders\RobotLoader;
 $loader->addDirectory(__DIR__ . '/app');
 
 // Set caching to the 'temp' directory
-$loader->setTempDirectory(__DIR__ . '/temp');
+$loader->setCacheDirectory(__DIR__ . '/temp');
 
 // Scans directories using cache
 $loader->refresh();

@@ -12,7 +12,7 @@ require __DIR__ . '/../bootstrap.php';
 
 
 $loader = new RobotLoader;
-$loader->setTempDirectory(getTempDir());
+$loader->setCacheDirectory(getTempDir());
 $loader->addDirectory(__DIR__ . '/../Loaders/files');
 $loader->excludeDirectory(__DIR__ . '/../Loaders/files/exclude');
 $loader->excludeDirectory(__DIR__ . '/../Loaders/files/exclude2/excluded.php');
