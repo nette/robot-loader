@@ -11,11 +11,11 @@ use Nette;
 use Nette\Utils\FileSystem;
 use SplFileInfo;
 use function array_merge, defined, extension_loaded, file_get_contents, file_put_contents, filemtime, flock, fopen, function_exists, hash, is_array, is_dir, is_file, realpath, rename, serialize, spl_autoload_register, sprintf, strlen, unlink, var_export;
-use const LOCK_EX, LOCK_SH, LOCK_UN, T_CLASS, T_COMMENT, T_DOC_COMMENT, T_ENUM, T_INTERFACE, T_NAME_QUALIFIED, T_NAMESPACE, T_STRING, T_TRAIT, T_WHITESPACE, TOKEN_PARSE;
 
 
 /**
- * Nette auto loader is responsible for loading classes and interfaces.
+ * Scans directories for PHP classes, interfaces, traits, and enums and autoloads them on demand.
+ * Unlike PSR-4, does not require any naming conventions — classes are discovered by content.
  *
  * <code>
  * $loader = new Nette\Loaders\RobotLoader;
@@ -65,6 +65,9 @@ class RobotLoader
 	}
 
 
+	/**
+	 * Saves the cache if it was modified during the request.
+	 */
 	public function __destruct()
 	{
 		if ($this->needSave) {
@@ -74,7 +77,8 @@ class RobotLoader
 
 
 	/**
-	 * Register autoloader.
+	 * Registers the autoloader via spl_autoload_register().
+	 * @param  bool  $prepend  Prepend instead of append to the autoloader stack.
 	 */
 	public function register(bool $prepend = false): static
 	{
@@ -84,7 +88,7 @@ class RobotLoader
 
 
 	/**
-	 * Handles autoloading of classes, interfaces or traits.
+	 * Autoloads the requested class, interface, trait, or enum.
 	 */
 	public function tryLoad(string $type): void
 	{
@@ -126,7 +130,7 @@ class RobotLoader
 
 
 	/**
-	 * Add path or paths to list.
+	 * Adds one or more directories (or individual files) to scan for classes.
 	 */
 	public function addDirectory(string ...$paths): static
 	{
@@ -135,6 +139,9 @@ class RobotLoader
 	}
 
 
+	/**
+	 * Controls whether PHP parse errors in scanned files are rethrown. Enabled by default.
+	 */
 	public function reportParseErrors(bool $state = true): static
 	{
 		$this->reportParseErrors = $state;
@@ -143,7 +150,7 @@ class RobotLoader
 
 
 	/**
-	 * Excludes path or paths from list.
+	 * Excludes one or more directories (or individual files) from scanning.
 	 */
 	public function excludeDirectory(string ...$paths): static
 	{
@@ -153,6 +160,7 @@ class RobotLoader
 
 
 	/**
+	 * Returns all indexed classes with their file paths.
 	 * @return array<class-string, string>  class => filename
 	 */
 	public function getIndexedClasses(): array
@@ -168,7 +176,7 @@ class RobotLoader
 
 
 	/**
-	 * Rebuilds class list cache.
+	 * Rebuilds the class index from scratch, discarding any previously cached data.
 	 */
 	public function rebuild(): void
 	{
@@ -182,7 +190,7 @@ class RobotLoader
 
 
 	/**
-	 * Refreshes class list cache.
+	 * Loads the cached index and incrementally updates it for any changed files.
 	 */
 	public function refresh(): void
 	{
@@ -195,7 +203,7 @@ class RobotLoader
 
 
 	/**
-	 * Refreshes $this->classes & $this->emptyFiles.
+	 * Scans all configured paths and updates the class index, reusing cached mtimes to skip unchanged files.
 	 */
 	private function refreshClasses(): void
 	{
@@ -247,8 +255,8 @@ class RobotLoader
 
 
 	/**
-	 * Creates an iterator scanning directory for PHP files and subdirectories.
-	 * @throws Nette\IOException if path is not found
+	 * Creates a recursive file iterator for the given directory, applying ignore and exclude filters.
+	 * @throws Nette\IOException  If the directory does not exist.
 	 */
 	private function createFileIterator(string $dir): Nette\Utils\Finder
 	{
@@ -272,6 +280,9 @@ class RobotLoader
 	}
 
 
+	/**
+	 * Re-scans a single file and updates the class index accordingly.
+	 */
 	private function updateFile(string $file): void
 	{
 		foreach ($this->classes as $class => [$prevFile]) {
@@ -305,7 +316,7 @@ class RobotLoader
 
 
 	/**
-	 * Searches classes, interfaces and traits in PHP file.
+	 * Extracts class, interface, trait, and enum names from a PHP file using token parsing.
 	 * @return list<class-string>
 	 */
 	private function scanPhp(string $file): array
@@ -380,7 +391,8 @@ class RobotLoader
 
 
 	/**
-	 * Sets auto-refresh mode.
+	 * Enables or disables automatic cache refresh on every autoload attempt. Enabled by default.
+	 * Disable in production for better performance; clear the cache manually on deployment.
 	 */
 	public function setAutoRefresh(bool $state = true): static
 	{
@@ -390,7 +402,7 @@ class RobotLoader
 
 
 	/**
-	 * Sets the directory for storing cache.
+	 * Sets the directory for storing the class index cache. Must be an absolute path.
 	 */
 	public function setCacheDirectory(string $dir): static
 	{
@@ -411,7 +423,7 @@ class RobotLoader
 
 
 	/**
-	 * Loads class list from cache.
+	 * Loads the class index from the cache file, building it from scratch if it does not exist yet.
 	 */
 	private function loadCache(): void
 	{
@@ -459,8 +471,8 @@ class RobotLoader
 
 
 	/**
-	 * Writes class list to cache.
-	 * @param  ?resource  $lock
+	 * Writes the class index to the cache file atomically.
+	 * @param  ?resource  $lock  An already-acquired exclusive lock, or null to acquire one.
 	 */
 	private function saveCache($lock = null): void
 	{
@@ -483,6 +495,7 @@ class RobotLoader
 
 
 	/**
+	 * Opens a lock file and acquires a shared or exclusive lock on it.
 	 * @param  LOCK_SH|LOCK_EX  $mode
 	 * @return resource
 	 */
