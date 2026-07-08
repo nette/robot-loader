@@ -9,8 +9,9 @@ namespace Nette\Loaders;
 
 use Nette;
 use Nette\Utils\FileSystem;
+use Nette\Utils\Helpers;
 use SplFileInfo;
-use function array_merge, defined, extension_loaded, file_get_contents, file_put_contents, filemtime, flock, fopen, function_exists, hash, is_array, is_dir, is_file, realpath, rename, serialize, spl_autoload_register, sprintf, strlen, unlink, var_export;
+use function array_merge, extension_loaded, file_get_contents, file_put_contents, filemtime, flock, fopen, function_exists, hash, is_array, is_dir, is_file, realpath, rename, serialize, spl_autoload_register, sprintf, strlen, unlink, usleep, var_export;
 
 
 /**
@@ -439,7 +440,7 @@ class RobotLoader
 		// 1) We want to do as little as possible IO calls on production and also directory and file can be not writable (#19)
 		// so on Linux we include the file directly without shared lock, therefore, the file must be created atomically by renaming.
 		// 2) On Windows file cannot be renamed-to while is open (ie by include() #11), so we have to acquire a lock.
-		$lock = defined('PHP_WINDOWS_VERSION_BUILD')
+		$lock = Helpers::IsWindows
 			? $this->acquireLock("$file.lock", LOCK_SH)
 			: null;
 
@@ -482,14 +483,36 @@ class RobotLoader
 		$file = $this->generateCacheFileName();
 		$lock = $lock ?: $this->acquireLock("$file.lock", LOCK_EX);
 		$code = "<?php\nreturn " . var_export([$this->classes, $this->missingClasses, $this->emptyFiles], return: true) . ";\n";
+		$this->atomicWrite($file, $code);
+	}
 
-		if (file_put_contents("$file.tmp", $code) !== strlen($code) || !rename("$file.tmp", $file)) {
-			@unlink("$file.tmp"); // @ file may not exist
-			throw new \RuntimeException(sprintf("Unable to create '%s'.", $file));
+
+	/**
+	 * Atomically writes $content to $file via a temporary file and rename().
+	 * On Windows rename() over a momentarily locked target intermittently fails, so it is retried briefly.
+	 */
+	private function atomicWrite(string $file, string $content): void
+	{
+		$tmp = "$file.tmp";
+		if (file_put_contents($tmp, $content) !== strlen($content)) {
+			@unlink($tmp); // @ - file may not exist
+			throw new \RuntimeException(sprintf("Unable to create '%s'. %s", $file, Helpers::getLastError()));
 		}
 
 		if (function_exists('opcache_invalidate')) {
-			@opcache_invalidate($file, force: true); // @ can be restricted
+			@opcache_invalidate($file, force: true); // @ - can be restricted
+		}
+
+		for ($attempt = 1; !@rename($tmp, $file); $attempt++) {
+			if ($attempt >= 3 || !Helpers::IsWindows) {
+				@unlink($tmp);
+				throw new \RuntimeException(sprintf("Unable to create '%s'. %s", $file, Helpers::getLastError()));
+			}
+			usleep(100_000);
+		}
+
+		if (function_exists('opcache_invalidate')) {
+			@opcache_invalidate($file, force: true); // @ - can be restricted
 		}
 	}
 
