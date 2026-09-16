@@ -9,6 +9,12 @@ internally and the rationale behind key design decisions - lives in `docs/`.
 Consult it before non-trivial changes; it is the source of truth from which the
 public manual is distilled.
 
+`docs/upgrading.md` records, per released version, every change visible to
+users of the package (renames, removals, deprecations, signatures, behavior,
+configuration), each with its commit hash; internal changes are not in it. It
+is the place to look up the history of a public symbol. Do not write to it; it
+is extended at release time from the git history.
+
 ## Project Overview
 
 Nette RobotLoader is a high-performance PHP autoloader library that automatically discovers and loads classes, interfaces, traits, and enums without requiring strict PSR-4 naming conventions. It's part of the Nette Framework ecosystem but works as a standalone component.
