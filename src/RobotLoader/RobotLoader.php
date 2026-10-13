@@ -496,14 +496,14 @@ class RobotLoader
 		$tmp = "$file.tmp";
 		if (file_put_contents($tmp, $content) !== strlen($content)) {
 			$error = Helpers::getLastError();
-			@unlink($tmp); // @ - file may not exist
+			@unlink($tmp); // @ file may not exist
 			throw new \RuntimeException(sprintf("Unable to create '%s'. %s", $file, $error));
 		}
 
-		for ($attempt = 1; !@rename($tmp, $file); $attempt++) {
+		for ($attempt = 1; !@rename($tmp, $file); $attempt++) { // @ is escalated to exception
 			if ($attempt >= 3 || !Helpers::IsWindows) {
 				$error = Helpers::getLastError();
-				@unlink($tmp); // @ - file may be locked
+				@unlink($tmp); // @ file may be locked
 				throw new \RuntimeException(sprintf("Unable to create '%s'. %s", $file, $error));
 			}
 			usleep(100_000);
