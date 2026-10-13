@@ -242,11 +242,11 @@ Three GitHub Actions workflows:
 
 1. **Coding Style** - Code checker + coding standard enforcement
 2. **Static Analysis** - PHPStan (on push and pull request)
-3. **Tests** - Matrix testing across PHP versions (8.1-8.5)
+3. **Tests** - Matrix testing across PHP versions (8.1-8.6)
 
 ## Dependencies
 
-- **PHP**: 8.1 - 8.5
+- **PHP**: 8.1 - 8.6
 - **ext-tokenizer**: Required for PHP parsing
 - **nette/utils**: ^4.0.6 (FileSystem, Finder, Helpers)
 - **Dev**: nette/tester, tracy/tracy, phpstan/phpstan + nette/phpstan-rules
