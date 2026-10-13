@@ -7,7 +7,6 @@
 use Nette\Loaders\RobotLoader;
 use Tester\Assert;
 
-
 require __DIR__ . '/../bootstrap.php';
 
 
@@ -29,9 +28,9 @@ Assert::true(trait_exists('TestTrait')); // file/trait.php
 Assert::true(class_exists('Bug28')); // file/bug-28.php
 
 Assert::true(class_exists('TestClass'));           // files/namespaces1.php
-Assert::true(class_exists('MySpace1\TestClass1')); // files/namespaces1.php
-Assert::true(class_exists('MySpace2\TestClass2')); // files/namespaces2.php
-Assert::true(class_exists('MySpace3\TestClass3')); // files/namespaces2.php
+Assert::true(class_exists(MySpace1\TestClass1::class)); // files/namespaces1.php
+Assert::true(class_exists(MySpace2\TestClass2::class)); // files/namespaces2.php
+Assert::true(class_exists(MySpace3\TestClass3::class)); // files/namespaces2.php
 
 Assert::false(class_exists('ExcludedClass')); // files/exclude/excluded.php
 Assert::false(class_exists('Excluded2Class')); // files/exclude2/excluded.php

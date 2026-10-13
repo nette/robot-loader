@@ -8,10 +8,9 @@
 namespace Nette\Loaders;
 
 use Nette;
-use Nette\Utils\FileSystem;
-use Nette\Utils\Helpers;
+use Nette\Utils\{FileSystem, Helpers};
 use SplFileInfo;
-use function array_merge, extension_loaded, file_get_contents, file_put_contents, filemtime, flock, fopen, function_exists, hash, is_array, is_dir, is_file, realpath, rename, serialize, spl_autoload_register, sprintf, strlen, unlink, usleep, var_export;
+use function extension_loaded, function_exists, is_array, sprintf, strlen;
 
 
 /**
@@ -135,7 +134,7 @@ class RobotLoader
 	 */
 	public function addDirectory(string ...$paths): static
 	{
-		$this->scanPaths = array_merge($this->scanPaths, array_values($paths));
+		$this->scanPaths = [...$this->scanPaths, ...array_values($paths)];
 		return $this;
 	}
 
@@ -155,7 +154,7 @@ class RobotLoader
 	 */
 	public function excludeDirectory(string ...$paths): static
 	{
-		$this->excludeDirs = array_merge($this->excludeDirs, array_values($paths));
+		$this->excludeDirs = [...$this->excludeDirs, ...array_values($paths)];
 		return $this;
 	}
 
@@ -267,7 +266,7 @@ class RobotLoader
 
 		$dir = realpath($dir) ?: $dir; // realpath does not work in phar
 		$disallow = [];
-		foreach (array_merge($this->ignoreDirs, $this->excludeDirs) as $item) {
+		foreach ([...$this->ignoreDirs, ...$this->excludeDirs] as $item) {
 			if ($item = realpath($item)) {
 				$disallow[$item] = true;
 			}

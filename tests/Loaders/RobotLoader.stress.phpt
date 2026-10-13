@@ -7,7 +7,7 @@
 require __DIR__ . '/../../vendor/autoload.php';
 
 $loader = new Nette\Loaders\RobotLoader;
-$loader->setAutoRefresh(true);
+$loader->setAutoRefresh();
 $loader->setCacheDirectory(__DIR__ . '/../tmp');
 $loader->addDirectory(__DIR__);
 $loader->register();
